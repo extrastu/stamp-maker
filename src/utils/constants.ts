@@ -50,6 +50,19 @@ export const COLOR_PRESETS = [
   { id: 'black', name: '曜黑', hex: '#1E1E1E', isLight: false },
 ];
 
+export const BACKDROP_COLOR_PRESETS = [
+  { id: 'transparent', name: '透明无底', hex: 'transparent', isLight: true },
+  { id: 'paper', name: '暖黄纸', hex: '#FFF4DD', isLight: true },
+  { id: 'purewhite', name: '纯白底', hex: '#FFFFFF', isLight: true },
+  { id: 'dark', name: '极夜黑', hex: '#1E1E1E', isLight: false },
+  { id: 'moss', name: '森林绿', hex: '#587052', isLight: false },
+  { id: 'slate', name: '灰蓝调', hex: '#7B96B2', isLight: false },
+  { id: 'sunset', name: '落日橙', hex: '#EA7C56', isLight: false },
+  { id: 'terracotta', name: '陶土红', hex: '#8C483D', isLight: false },
+  { id: 'pink', name: '柔雾粉', hex: '#F7B8CE', isLight: true },
+  { id: 'oat', name: '燕麦米', hex: '#D8CBB5', isLight: true },
+];
+
 export const TICKET_COLOR_PRESETS = [
   { id: 'oat', name: '燕麦米', hex: '#D8CBB5', isLight: true },
   { id: 'mutedblue', name: '灰蓝', hex: '#7B96B2', isLight: false },
@@ -92,6 +105,8 @@ export const DEFAULT_STAMP_OPTIONS: StampOptions = {
   backgroundColor: '#FFFFFF',
   photoRadius: 0,
   shadow: true,
+  backdropEnabled: false,
+  backdropColor: '#FFF4DD',
 };
 
 const now = new Date();
@@ -109,6 +124,8 @@ export const DEFAULT_TICKET_OPTIONS: TicketOptions = {
   themeColor: '#D8CBB5',
   textColor: '#1A1410',
   photoRadius: 18,
+  backdropEnabled: false,
+  backdropColor: '#FFF4DD',
 };
 
 export const DEFAULT_EXPORT_SETTINGS: ExportSettings = {

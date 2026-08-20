@@ -137,8 +137,12 @@ export async function renderStamp(
 
   stampCtx.restore();
 
-  // If transparent output is requested, return stampCanvas directly
-  if (transparentBackground) {
+  const shouldRenderBackdrop =
+    (options.backdropEnabled && options.backdropColor && options.backdropColor !== 'transparent') ||
+    !transparentBackground;
+
+  // If no backdrop requested, return transparent cutout stampCanvas directly
+  if (!shouldRenderBackdrop) {
     return {
       canvas: stampCanvas,
       width: stampWidth,
@@ -147,8 +151,8 @@ export async function renderStamp(
     };
   }
 
-  // Otherwise, render on paper background with padding
-  const padding = Math.round(40 * baseScale);
+  // Otherwise, render on background card with padding and authentic soft drop shadow
+  const padding = Math.round(56 * baseScale);
   const finalCanvas = document.createElement('canvas');
   finalCanvas.width = stampWidth + padding * 2;
   finalCanvas.height = stampHeight + padding * 2;
@@ -158,12 +162,19 @@ export async function renderStamp(
     throw new Error('Failed to get 2d context for final canvas');
   }
 
-  // Fill paper background
-  finalCtx.fillStyle = paperColor;
+  // Fill backdrop background color
+  const bgCardColor = (options.backdropEnabled && options.backdropColor) ? options.backdropColor : paperColor;
+  finalCtx.fillStyle = bgCardColor;
   finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-  // Draw stamp in center
+  // Draw stamp in center with authentic realistic physical drop shadow
+  finalCtx.save();
+  finalCtx.shadowColor = 'rgba(40, 30, 20, 0.22)';
+  finalCtx.shadowBlur = Math.round(26 * baseScale);
+  finalCtx.shadowOffsetX = 0;
+  finalCtx.shadowOffsetY = Math.round(14 * baseScale);
   finalCtx.drawImage(stampCanvas, padding, padding);
+  finalCtx.restore();
 
   return {
     canvas: finalCanvas,

@@ -525,8 +525,12 @@ export async function renderTicket(
     );
   }
 
+  const shouldRenderBackdrop =
+    (options.backdropEnabled && options.backdropColor && options.backdropColor !== 'transparent') ||
+    !transparentBackground;
+
   // Return transparent or paper background
-  if (transparentBackground) {
+  if (!shouldRenderBackdrop) {
     return {
       canvas: ticketCanvas,
       width: cardWidth,
@@ -535,8 +539,8 @@ export async function renderTicket(
     };
   }
 
-  // Render on paper background with soft shadow
-  const padding = Math.round(60 * baseScale);
+  // Render on paper/backdrop card background with soft shadow
+  const padding = Math.round(56 * baseScale);
   const finalCanvas = document.createElement('canvas');
   finalCanvas.width = cardWidth + padding * 2;
   finalCanvas.height = cardHeight + padding * 2;
@@ -546,12 +550,13 @@ export async function renderTicket(
     throw new Error('Failed to get 2d context for final ticket canvas');
   }
 
-  finalCtx.fillStyle = paperColor;
+  const bgCardColor = (options.backdropEnabled && options.backdropColor) ? options.backdropColor : paperColor;
+  finalCtx.fillStyle = bgCardColor;
   finalCtx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
   finalCtx.save();
-  finalCtx.shadowColor = 'rgba(40, 30, 20, 0.18)';
-  finalCtx.shadowBlur = Math.round(28 * baseScale);
+  finalCtx.shadowColor = 'rgba(40, 30, 20, 0.22)';
+  finalCtx.shadowBlur = Math.round(26 * baseScale);
   finalCtx.shadowOffsetX = 0;
   finalCtx.shadowOffsetY = Math.round(14 * baseScale);
   finalCtx.drawImage(ticketCanvas, padding, padding);

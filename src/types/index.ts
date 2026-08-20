@@ -32,9 +32,11 @@ export interface StampOptions {
   margin: number; // White border between photo and perforation in px (relative to base size)
   holeRadius: number; // Radius of hole in px (relative to base size)
   holeGap: number; // Distance between hole centers in px
-  backgroundColor: string; // Background color of stamp paper
+  backgroundColor: string; // Background color of stamp paper inner border
   photoRadius: number; // Rounded corner for photo inside stamp
   shadow: boolean; // Soft shadow in preview
+  backdropEnabled: boolean; // Place stamp inside an outer backdrop card
+  backdropColor: string; // Background color of the outer backdrop card
 }
 
 export interface TicketOptions {
@@ -48,6 +50,8 @@ export interface TicketOptions {
   themeColor: string; // Background color of ticket card
   textColor: string; // Text color on ticket
   photoRadius: number; // Rounded corner of photo on ticket
+  backdropEnabled: boolean; // Place ticket inside an outer backdrop card
+  backdropColor: string; // Background color of the outer backdrop card
 }
 
 export interface ExportSettings {

@@ -4,6 +4,7 @@ import { MakerMode, StampOptions, StampStyleId, TicketOptions, ImageItem } from 
 import { StampPreview } from './StampPreview';
 import {
   COLOR_PRESETS,
+  BACKDROP_COLOR_PRESETS,
   TICKET_COLOR_PRESETS,
   VERTICAL_TICKET_PRESETS,
   HORIZONTAL_TICKET_PRESETS,
@@ -83,6 +84,32 @@ export const EditorView: React.FC<EditorViewProps> = ({
     });
   };
 
+  const handleSelectBackdropColor = (hex: string) => {
+    if (hex === 'transparent') {
+      onOptionsChange({
+        ...options,
+        backdropEnabled: false,
+        backdropColor: 'transparent',
+      });
+      setTicketOptions((prev) => ({
+        ...prev,
+        backdropEnabled: false,
+        backdropColor: 'transparent',
+      }));
+    } else {
+      onOptionsChange({
+        ...options,
+        backdropEnabled: true,
+        backdropColor: hex,
+      });
+      setTicketOptions((prev) => ({
+        ...prev,
+        backdropEnabled: true,
+        backdropColor: hex,
+      }));
+    }
+  };
+
   const handleSelectTicketPreset = (preset: { title: string; subtitle: string; themeColor: string }) => {
     setTicketOptions((prev) => ({
       ...prev,
@@ -149,6 +176,15 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const minMargin = 0;
   const maxMargin = 36;
   const sliderPercentage = Math.max(0, Math.min(100, ((options.margin - minMargin) / (maxMargin - minMargin)) * 100));
+
+  const currentBackdropHex =
+    mode === 'ticket'
+      ? ticketOptions.backdropEnabled
+        ? ticketOptions.backdropColor
+        : 'transparent'
+      : options.backdropEnabled
+      ? options.backdropColor
+      : 'transparent';
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-paper text-ink flex flex-col justify-between max-w-md mx-auto relative select-none">
@@ -349,30 +385,79 @@ export const EditorView: React.FC<EditorViewProps> = ({
               />
             </div>
 
-            {/* Background Color Selector */}
+            {/* Stamp Paper Inner Margin Color (Only shown when margin > 0) */}
+            {options.margin > 0 && (
+              <div>
+                <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
+                  <span>衬纸内边底色</span>
+                </div>
+                <div className="flex items-center gap-1.5 px-0.5">
+                  {COLOR_PRESETS.map((color) => {
+                    const isSelected = options.backgroundColor.toLowerCase() === color.hex.toLowerCase();
+                    return (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => handleSelectColor(color.hex)}
+                        style={{ backgroundColor: color.hex }}
+                        className={`size-5.5 rounded-full border-2 border-ink transition-all relative ${
+                          isSelected
+                            ? 'ring-2 ring-ink ring-offset-1 scale-110 shadow-neo-sm'
+                            : 'hover:scale-105 opacity-90'
+                        }`}
+                        aria-label={color.name}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Beautiful Neo-Brutalist Backdrop Card Selector */}
             <div>
               <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
-                <span>衬纸底色</span>
-                {options.margin === 0 && (
-                  <span className="text-[10px] text-ink-3 font-normal">满幅模式无需底色</span>
-                )}
+                <span>外层背景卡片</span>
+                <span className="font-mono text-[9.5px] text-ink-2 bg-sand px-1.5 py-0.2 rounded border border-ink/30">
+                  {currentBackdropHex === 'transparent'
+                    ? '🔲 透明镂空'
+                    : BACKDROP_COLOR_PRESETS.find((c) => c.hex.toLowerCase() === currentBackdropHex.toLowerCase())?.name || '卡片底色'}
+                </span>
               </div>
-              <div className="flex items-center justify-between gap-1.5 px-0.5">
-                {COLOR_PRESETS.map((color) => {
-                  const isSelected = options.backgroundColor.toLowerCase() === color.hex.toLowerCase();
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+                {/* Transparent Pill */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectBackdropColor('transparent')}
+                  className={`h-7 px-2.5 rounded-xl border-2 border-ink flex items-center gap-1.5 shrink-0 transition-all font-bold text-xs btn-neo ${
+                    currentBackdropHex === 'transparent'
+                      ? 'bg-sun text-ink shadow-neo-sm ring-2 ring-ink ring-offset-1'
+                      : 'bg-paper text-ink-2 shadow-none hover:bg-sand'
+                  }`}
+                >
+                  <div className="size-3.5 rounded-md bg-transparency-grid border border-ink/40" />
+                  <span className="text-[10.5px]">透明无底</span>
+                </button>
+
+                {/* Color Swatch Pills */}
+                {BACKDROP_COLOR_PRESETS.filter((c) => c.hex !== 'transparent').map((color) => {
+                  const isSelected = currentBackdropHex.toLowerCase() === color.hex.toLowerCase();
                   return (
                     <button
                       key={color.id}
                       type="button"
-                      onClick={() => handleSelectColor(color.hex)}
-                      style={{ backgroundColor: color.hex }}
-                      className={`size-6 rounded-full border-2 border-ink transition-all relative ${
+                      onClick={() => handleSelectBackdropColor(color.hex)}
+                      className={`h-7 px-2 rounded-xl border-2 border-ink flex items-center gap-1.5 shrink-0 transition-all font-bold text-xs btn-neo ${
                         isSelected
-                          ? 'ring-2 ring-ink ring-offset-2 scale-110 shadow-neo-sm'
-                          : 'hover:scale-105 opacity-90'
+                          ? 'bg-sun text-ink shadow-neo-sm ring-2 ring-ink ring-offset-1'
+                          : 'bg-paper text-ink opacity-90 hover:opacity-100 hover:bg-sand'
                       }`}
-                      aria-label={color.name}
-                    />
+                    >
+                      <div
+                        className="size-3.5 rounded-md border border-ink/60 shrink-0"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span className="text-[10.5px] whitespace-nowrap">{color.name}</span>
+                    </button>
                   );
                 })}
               </div>
@@ -469,15 +554,15 @@ export const EditorView: React.FC<EditorViewProps> = ({
               </div>
             </div>
 
-            {/* Ticket Card Theme Color Palettes */}
+            {/* Ticket Card Theme Color & Backdrop Card */}
             <div>
               <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
                 <span>票面复古色</span>
-                <span className="font-mono text-[9.5px] text-ink-2 bg-sand px-1 rounded border border-ink/30">
+                <span className="font-mono text-[9.5px] text-ink-2 bg-sand px-1.5 py-0.2 rounded border border-ink/30">
                   {TICKET_COLOR_PRESETS.find((c) => c.hex.toLowerCase() === ticketOptions.themeColor.toLowerCase())?.name || '自定义'}
                 </span>
               </div>
-              <div className="flex items-center justify-between gap-1 px-0.5">
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
                 {TICKET_COLOR_PRESETS.map((color) => {
                   const isSelected = ticketOptions.themeColor.toLowerCase() === color.hex.toLowerCase();
                   return (
@@ -485,14 +570,68 @@ export const EditorView: React.FC<EditorViewProps> = ({
                       key={color.id}
                       type="button"
                       onClick={() => setTicketOptions((prev) => ({ ...prev, themeColor: color.hex }))}
-                      style={{ backgroundColor: color.hex }}
-                      className={`size-6 rounded-full border-2 border-ink transition-all relative ${
+                      className={`h-7 px-2 rounded-xl border-2 border-ink flex items-center gap-1.5 shrink-0 transition-all font-bold text-xs btn-neo ${
                         isSelected
-                          ? 'ring-2 ring-ink ring-offset-2 scale-110 shadow-neo-sm'
-                          : 'hover:scale-105 opacity-90'
+                          ? 'bg-sun text-ink shadow-neo-sm ring-2 ring-ink ring-offset-1'
+                          : 'bg-paper text-ink opacity-90 hover:opacity-100 hover:bg-sand'
                       }`}
-                      aria-label={color.name}
-                    />
+                    >
+                      <div
+                        className="size-3.5 rounded-md border border-ink/60 shrink-0"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span className="text-[10.5px] whitespace-nowrap">{color.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Ticket Outer Backdrop Card */}
+            <div>
+              <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
+                <span>外层背景卡片</span>
+                <span className="font-mono text-[9.5px] text-ink-2 bg-sand px-1.5 py-0.2 rounded border border-ink/30">
+                  {currentBackdropHex === 'transparent'
+                    ? '🔲 透明无底'
+                    : BACKDROP_COLOR_PRESETS.find((c) => c.hex.toLowerCase() === currentBackdropHex.toLowerCase())?.name || '卡片底色'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5 px-0.5">
+                {/* Transparent Pill */}
+                <button
+                  type="button"
+                  onClick={() => handleSelectBackdropColor('transparent')}
+                  className={`h-7 px-2.5 rounded-xl border-2 border-ink flex items-center gap-1.5 shrink-0 transition-all font-bold text-xs btn-neo ${
+                    currentBackdropHex === 'transparent'
+                      ? 'bg-sun text-ink shadow-neo-sm ring-2 ring-ink ring-offset-1'
+                      : 'bg-paper text-ink-2 shadow-none hover:bg-sand'
+                  }`}
+                >
+                  <div className="size-3.5 rounded-md bg-transparency-grid border border-ink/40" />
+                  <span className="text-[10.5px]">透明无底</span>
+                </button>
+
+                {/* Color Swatch Pills */}
+                {BACKDROP_COLOR_PRESETS.filter((c) => c.hex !== 'transparent').map((color) => {
+                  const isSelected = currentBackdropHex.toLowerCase() === color.hex.toLowerCase();
+                  return (
+                    <button
+                      key={color.id}
+                      type="button"
+                      onClick={() => handleSelectBackdropColor(color.hex)}
+                      className={`h-7 px-2 rounded-xl border-2 border-ink flex items-center gap-1.5 shrink-0 transition-all font-bold text-xs btn-neo ${
+                        isSelected
+                          ? 'bg-sun text-ink shadow-neo-sm ring-2 ring-ink ring-offset-1'
+                          : 'bg-paper text-ink opacity-90 hover:opacity-100 hover:bg-sand'
+                      }`}
+                    >
+                      <div
+                        className="size-3.5 rounded-md border border-ink/60 shrink-0"
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span className="text-[10.5px] whitespace-nowrap">{color.name}</span>
+                    </button>
                   );
                 })}
               </div>
