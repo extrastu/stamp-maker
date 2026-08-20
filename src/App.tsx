@@ -114,6 +114,7 @@ export const App: React.FC = () => {
             options={stampOptions}
             onOptionsChange={handleStampOptionsChange}
             onBackToCrop={() => setCurrentStep('crop')}
+            onResetToHome={handleReset}
             originalFileName={images[0]?.name}
             onToast={showToast}
           />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Copy, SlidersHorizontal, Layers } from 'lucide-react';
+import { ArrowLeft, Download, Copy, SlidersHorizontal, Layers, Home } from 'lucide-react';
 import { StampOptions, StampStyleId, ImageItem } from '../../types';
 import { StampPreview } from './StampPreview';
 import { COLOR_PRESETS, DEFAULT_EXPORT_SETTINGS, STAMP_STYLES } from '../../utils/constants';
@@ -12,6 +12,7 @@ interface EditorViewProps {
   options: StampOptions;
   onOptionsChange: (options: StampOptions) => void;
   onBackToCrop: () => void;
+  onResetToHome: () => void;
   originalFileName?: string;
   onToast: (type: 'success' | 'error', message: string) => void;
 }
@@ -21,6 +22,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   options,
   onOptionsChange,
   onBackToCrop,
+  onResetToHome,
   originalFileName,
   onToast,
 }) => {
@@ -115,23 +117,38 @@ export const EditorView: React.FC<EditorViewProps> = ({
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-paper text-ink flex flex-col justify-between max-w-md mx-auto relative select-none">
       {/* 1. Top Navigation Row */}
       <div className="shrink-0 px-4 pt-1 pb-1 flex items-center justify-between z-10 safe-top">
-        <button
-          type="button"
-          onClick={onBackToCrop}
-          className="inline-flex h-7 items-center gap-1 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
-        >
-          <ArrowLeft className="size-3 stroke-[2.5]" />
-          <span>重新构图</span>
-        </button>
+        {/* Left Navigation Buttons: Return to Home + Re-crop */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={onResetToHome}
+            className="inline-flex h-7 items-center gap-1 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
+            title="返回首页重新选图"
+          >
+            <Home className="size-3 stroke-[2.5]" />
+            <span>首页选图</span>
+          </button>
 
-        {/* Center badge if multiple */}
+          <button
+            type="button"
+            onClick={onBackToCrop}
+            className="inline-flex h-7 items-center gap-1 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
+            title="返回上一页重新构图"
+          >
+            <ArrowLeft className="size-3 stroke-[2.5]" />
+            <span>重新构图</span>
+          </button>
+        </div>
+
+        {/* Center badge if multiple images */}
         {images.length > 1 && (
-          <div className="inline-flex items-center gap-1 bg-sun border-2 border-ink px-2.5 py-0.5 rounded-full shadow-neo-sm text-[11px] font-mono font-bold text-ink">
-            <Layers className="size-3 stroke-[2.5]" />
-            <span>共 {images.length} 张邮票</span>
+          <div className="inline-flex items-center gap-1 bg-sun border-2 border-ink px-2 py-0.5 rounded-full shadow-neo-sm text-[10px] font-mono font-bold text-ink">
+            <Layers className="size-2.5 stroke-[2.5]" />
+            <span>共 {images.length} 张</span>
           </div>
         )}
 
+        {/* Right Settings Button */}
         <button
           type="button"
           onClick={() => setIsExportModalOpen(true)}
