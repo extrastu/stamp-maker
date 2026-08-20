@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Image as ImageIcon, Camera, X, ArrowRight, Copy, Check, ExternalLink } from "lucide-react";
 import { SampleStamp } from "./SampleStamp";
+import { ChangelogModal } from "../common/ChangelogModal";
 import { OFFLINE_SAMPLES } from "../../utils/sampleImages";
 import { isXhsMiniTool } from "../../utils/exportStamp";
 import logoImg from "../../assets/logo.png";
@@ -15,6 +16,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showChangelog, setShowChangelog] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const isXhs = isXhsMiniTool();
 
@@ -222,15 +224,23 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
       </div>
 
       {/* Bottom Footer */}
-      <footer className='text-center text-[11px] text-ink-2 pt-1 pb-3 safe-bottom font-mono'>
+      <footer className='flex items-center justify-center gap-2 text-center text-[11px] text-ink-2 pt-1 pb-3 safe-bottom font-mono'>
+        <button
+          type='button'
+          onClick={() => setShowChangelog(true)}
+          className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border-2 border-ink shadow-neo-sm btn-neo font-bold text-ink hover:bg-sun transition-colors'
+        >
+          <span>📜</span>
+          <span>更新日志</span>
+          <span className='font-mono text-[9px] bg-accent text-white px-1.5 py-0.2 rounded-full font-black'>v1.0.3</span>
+        </button>
+
         <button
           type='button'
           onClick={() => setShowAbout(true)}
-          className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border-2 border-ink shadow-neo-sm btn-neo font-bold text-ink hover:bg-sun transition-colors'
+          className='inline-flex items-center gap-1 px-3 py-1 rounded-full bg-card border-2 border-ink shadow-neo-sm btn-neo font-bold text-ink hover:bg-sun transition-colors'
         >
-          <span>Crafted by</span>
-          <span className='text-accent underline decoration-2'>extrastu</span>
-          <span>· 关于</span>
+          <span>关于</span>
         </button>
       </footer>
 
@@ -407,7 +417,19 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
               )}
             </div>
 
-            <div className='text-[10px] text-ink-3 pt-0.5 font-mono font-bold'>v1.0.4 · Built for Xiaohongshu</div>
+            <div className='flex items-center justify-between pt-1 border-t-2 border-dashed border-ink/20'>
+              <button
+                type='button'
+                onClick={() => {
+                  setShowAbout(false);
+                  setShowChangelog(true);
+                }}
+                className='text-[11px] font-bold text-accent hover:underline flex items-center gap-1'
+              >
+                <span>📜 查看版本更新日志</span>
+              </button>
+              <span className='text-[10px] text-ink-3 font-mono font-bold'>v1.0.3</span>
+            </div>
 
             <button
               type='button'
@@ -419,6 +441,12 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
           </div>
         </div>
       )}
+
+      {/* Changelog Modal */}
+      <ChangelogModal
+        isOpen={showChangelog}
+        onClose={() => setShowChangelog(false)}
+      />
 
       {isProcessing && (
         <div className='fixed inset-0 bg-ink/50 backdrop-blur-xs z-50 flex items-center justify-center'>
