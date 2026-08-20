@@ -7,7 +7,7 @@ import logoImg from "../../assets/logo.png";
 
 interface StartViewProps {
   onImagesSelected: (items: { file: File; url: string }[]) => void;
-  onToast?: (type: 'success' | 'error', message: string) => void;
+  onToast?: (type: "success" | "error", message: string) => void;
 }
 
 export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast }) => {
@@ -165,7 +165,9 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
             <div>
               <div className='flex items-center gap-1.5'>
                 <span className='font-extrabold text-ink text-sm leading-tight'>从相册上传</span>
-                <span className='font-mono text-[9.5px] font-bold text-accent bg-accent/10 px-1.5 py-0.2 rounded border border-accent/30'>支持多选</span>
+                <span className='font-mono text-[9.5px] font-bold text-accent bg-accent/10 px-1.5 py-0.2 rounded border border-accent/30'>
+                  支持多选
+                </span>
               </div>
               <div className='text-[11px] font-medium text-ink-2 mt-0.5'>支持批量选择多张照片</div>
             </div>
@@ -259,22 +261,21 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
             <div>
               <h3 className='text-base font-extrabold text-ink'>Stamp Maker</h3>
               <p className='text-xs font-semibold text-ink-2 mt-1 leading-relaxed'>
-                把日常照片一键转换为真实齿孔邮票。<br />
+                把日常照片一键转换为真实齿孔邮票。
+                <br />
                 100% 本地纯离线渲染，安全保密。
               </p>
             </div>
 
             {/* Links Section in About Modal */}
             <div className='space-y-1.5 text-left pt-1 border-t-2 border-dashed border-ink/20'>
-              <div className='text-[10px] font-bold text-ink-3 px-0.5'>
-                {isXhs ? '点击复制链接：' : '相关链接：'}
-              </div>
+              <div className='text-[10px] font-bold text-ink-3 px-0.5'>{isXhs ? "点击复制链接：" : "相关链接："}</div>
 
               {/* 1. Web Version */}
               {isXhs ? (
                 <button
                   type='button'
-                  onClick={() => handleCopyLink('web', 'https://stampmakers.pages.dev/', '网页版')}
+                  onClick={() => handleCopyLink("web", "https://stampmakers.pages.dev/", "网页版")}
                   className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sun transition-all text-left'
                 >
                   <div className='flex items-center gap-1.5'>
@@ -283,8 +284,18 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
                   </div>
                   <div className='flex items-center gap-1'>
                     <span className='font-mono text-[9.5px] text-ink-2'>stampmakers.pages.dev</span>
-                    <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'web' ? 'bg-mint text-ink font-bold' : 'bg-sand text-ink-2'}`}>
-                      {copiedKey === 'web' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === "web" ? "bg-mint text-ink font-bold" : "bg-sand text-ink-2"}`}
+                    >
+                      {copiedKey === "web" ? (
+                        <>
+                          <Check className='size-2.5' /> 已复制
+                        </>
+                      ) : (
+                        <>
+                          <Copy className='size-2.5' /> 复制
+                        </>
+                      )}
                     </span>
                   </div>
                 </button>
@@ -309,7 +320,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
               {isXhs ? (
                 <button
                   type='button'
-                  onClick={() => handleCopyLink('github', 'https://github.com/extrastu/stamp-maker', 'GitHub 源码')}
+                  onClick={() => handleCopyLink("github", "https://github.com/extrastu/stamp-maker", "GitHub 源码")}
                   className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sky transition-all text-left'
                 >
                   <div className='flex items-center gap-1.5'>
@@ -318,8 +329,18 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
                   </div>
                   <div className='flex items-center gap-1'>
                     <span className='font-mono text-[9.5px] text-ink-2'>extrastu/stamp-maker</span>
-                    <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'github' ? 'bg-mint text-ink font-bold' : 'bg-sand text-ink-2'}`}>
-                      {copiedKey === 'github' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === "github" ? "bg-mint text-ink font-bold" : "bg-sand text-ink-2"}`}
+                    >
+                      {copiedKey === "github" ? (
+                        <>
+                          <Check className='size-2.5' /> 已复制
+                        </>
+                      ) : (
+                        <>
+                          <Copy className='size-2.5' /> 复制
+                        </>
+                      )}
                     </span>
                   </div>
                 </button>
@@ -344,7 +365,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
               {isXhs ? (
                 <button
                   type='button'
-                  onClick={() => handleCopyLink('xhs', 'https://xhslink.cn/m/lTR6WMDnhB', '作者小红书')}
+                  onClick={() => handleCopyLink("xhs", "https://xhslink.cn/m/lTR6WMDnhB", "作者小红书")}
                   className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-rose transition-all text-left'
                 >
                   <div className='flex items-center gap-1.5'>
@@ -353,8 +374,18 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
                   </div>
                   <div className='flex items-center gap-1'>
                     <span className='font-mono text-[9.5px] text-accent font-bold'>@extrastu</span>
-                    <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'xhs' ? 'bg-mint text-ink font-bold' : 'bg-rose text-ink font-bold'}`}>
-                      {copiedKey === 'xhs' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+                    <span
+                      className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === "xhs" ? "bg-mint text-ink font-bold" : "bg-rose text-ink font-bold"}`}
+                    >
+                      {copiedKey === "xhs" ? (
+                        <>
+                          <Check className='size-2.5' /> 已复制
+                        </>
+                      ) : (
+                        <>
+                          <Copy className='size-2.5' /> 复制
+                        </>
+                      )}
                     </span>
                   </div>
                 </button>
@@ -376,9 +407,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
               )}
             </div>
 
-            <div className='text-[10px] text-ink-3 pt-0.5 font-mono font-bold'>
-              v1.0.3 · Built for Xiaohongshu
-            </div>
+            <div className='text-[10px] text-ink-3 pt-0.5 font-mono font-bold'>v1.0.4 · Built for Xiaohongshu</div>
 
             <button
               type='button'
