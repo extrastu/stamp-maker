@@ -18,12 +18,13 @@ export function isXhsMiniTool(): boolean {
  */
 export function generateFileName(
   originalName?: string,
-  extension = 'png'
+  extension = 'png',
+  index?: number
 ): string {
   if (originalName) {
     const base = originalName.replace(/\.[^/.]+$/, '').trim();
     if (base) {
-      return `${base}-stamp.${extension}`;
+      return index !== undefined ? `${base}-stamp-${index + 1}.${extension}` : `${base}-stamp.${extension}`;
     }
   }
 
@@ -32,112 +33,144 @@ export function generateFileName(
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const day = String(now.getDate()).padStart(2, '0');
   const hours = String(now.getHours()).padStart(2, '0');
-  const mins = String(now.getMinutes()).padStart(2, '0');
-  const secs = String(now.getSeconds()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
 
-  return `stamp-${year}${month}${day}-${hours}${mins}${secs}.${extension}`;
+  const suffix = index !== undefined ? `-${index + 1}` : '';
+  return `stamp-${year}${month}${day}-${hours}${minutes}${seconds}${suffix}.${extension}`;
 }
 
 /**
- * High-resolution Stamp Exporter
- * Strictly implements XHS MiniTool JSBridge:
- * 1. writeTempFile({ data: dataUrl }) -> { filePath }
- * 2. saveImageToPhotosAlbum({ filePath })
- * With standard browser fallback.
+ * High-definition Stamp Export Pipeline
+ * Supports Web Download and XHS MiniTool native photo album saving.
  */
 export async function downloadStamp(
   imageSource: string | HTMLImageElement,
   options: StampOptions,
   settings: ExportSettings,
-  originalName?: string
+  originalFileName?: string,
+  index?: number
 ): Promise<{ success: boolean; message: string }> {
-  const result = await renderStamp(
-    imageSource,
-    options,
-    settings.resolution,
-    settings.transparent,
-    settings.paperColor
-  );
+  try {
+    const isTransparent = settings.transparent && settings.format === 'png';
 
-  const dataUrl = result.dataUrl;
+    const result = await renderStamp(
+      imageSource,
+      options,
+      settings.resolution,
+      isTransparent,
+      settings.paperColor
+    );
 
-  // 1. If in XHS MiniTool container, use JSBridge save to album
-  if (isXhsMiniTool() && window.xhs?.miniTool) {
-    try {
-      // Step A: writeTempFile to get local temp filePath
-      const tempRes = await window.xhs.miniTool.writeTempFile({
-        data: dataUrl,
-      });
+    const fileName = generateFileName(originalFileName, settings.format, index);
 
-      const filePath = tempRes?.filePath || dataUrl;
-
-      // Step B: saveImageToPhotosAlbum
-      await window.xhs.miniTool.saveImageToPhotosAlbum({
-        filePath,
-      });
-
-      triggerConfetti();
-      return { success: true, message: '邮票已成功保存到系统相册！' };
-    } catch (err: any) {
-      console.error('JSBridge saveImageToPhotosAlbum error', err);
-      // Direct dataUrl fallback if writeTempFile had issue
+    // 1. Xiaohongshu Native MiniTool Environment
+    if (isXhsMiniTool() && window.xhs?.miniTool) {
       try {
-        await window.xhs.miniTool.saveImageToPhotosAlbum({
-          filePath: dataUrl,
+        const tempRes = await window.xhs.miniTool.writeTempFile({
+          data: result.dataUrl,
         });
-        triggerConfetti();
-        return { success: true, message: '邮票已成功保存到系统相册！' };
-      } catch (fallbackErr: any) {
-        console.error('Fallback save failed', fallbackErr);
-        return {
-          success: false,
-          message: err?.errMsg || fallbackErr?.errMsg || '保存相册失败，请检查相册权限',
-        };
+
+        if (tempRes && tempRes.filePath) {
+          await window.xhs.miniTool.saveImageToPhotosAlbum({
+            filePath: tempRes.filePath,
+          });
+          triggerConfetti();
+          return { success: true, message: '邮票已成功保存至手机相册！' };
+        }
+      } catch (err: any) {
+        console.warn('XHS JSBridge save failed, falling back to browser download', err);
       }
     }
+
+    // 2. Standard Web Browser Download
+    const mimeType =
+      settings.format === 'jpeg'
+        ? 'image/jpeg'
+        : settings.format === 'webp'
+        ? 'image/webp'
+        : 'image/png';
+
+    return new Promise((resolve) => {
+      result.canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve({ success: false, message: '生成图片数据失败' });
+            return;
+          }
+
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          triggerConfetti();
+          resolve({ success: true, message: '高清邮票已成功导出下载！' });
+        },
+        mimeType,
+        0.95
+      );
+    });
+  } catch (error) {
+    console.error('Download stamp error', error);
+    return {
+      success: false,
+      message: '导出失败，请重试',
+    };
   }
-
-  // 2. Web browser fallback download
-  const mimeType =
-    settings.format === 'jpeg'
-      ? 'image/jpeg'
-      : settings.format === 'webp'
-      ? 'image/webp'
-      : 'image/png';
-
-  const ext = settings.format === 'jpeg' ? 'jpg' : settings.format;
-  const fileName = generateFileName(originalName, ext);
-
-  return new Promise((resolve) => {
-    result.canvas.toBlob(
-      (blob) => {
-        if (!blob) {
-          resolve({ success: false, message: '图片生成失败' });
-          return;
-        }
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-
-        triggerConfetti();
-        resolve({ success: true, message: '高清邮票已成功导出下载！' });
-      },
-      mimeType,
-      0.95
-    );
-  });
 }
 
 /**
- * Publish Stamp directly to XHS Note via JSBridge postNote
+ * Batch Export Multiple Stamps
+ */
+export async function downloadMultipleStamps(
+  imageSources: (string | HTMLImageElement)[],
+  options: StampOptions,
+  settings: ExportSettings,
+  originalFileName?: string
+): Promise<{ success: boolean; message: string }> {
+  try {
+    let successCount = 0;
+    for (let i = 0; i < imageSources.length; i++) {
+      const res = await downloadStamp(
+        imageSources[i],
+        options,
+        settings,
+        originalFileName,
+        i
+      );
+      if (res.success) {
+        successCount++;
+      }
+      // Small pause between multiple file triggers in browser
+      if (!isXhsMiniTool() && i < imageSources.length - 1) {
+        await new Promise((r) => setTimeout(r, 300));
+      }
+    }
+
+    triggerConfetti();
+    return {
+      success: true,
+      message: `已成功保存 ${successCount} 张高清邮票！`,
+    };
+  } catch (e) {
+    console.error('Batch download failed', e);
+    return {
+      success: false,
+      message: '批量导出失败，请重试',
+    };
+  }
+}
+
+/**
+ * Publish Multiple Stamps directly to XHS Note via JSBridge postNote
  */
 export async function postStampToXhsNote(
-  imageSource: string | HTMLImageElement,
+  imageSources: (string | HTMLImageElement)[] | string | HTMLImageElement,
   options: StampOptions,
   settings: ExportSettings,
   noteData?: { title?: string; content?: string; tags?: string }
@@ -146,14 +179,21 @@ export async function postStampToXhsNote(
     return { success: false, message: '当前非小红书容器环境' };
   }
 
+  const sources = Array.isArray(imageSources) ? imageSources : [imageSources];
+
   try {
-    const result = await renderStamp(
-      imageSource,
-      options,
-      Math.min(settings.resolution, 2160),
-      settings.transparent,
-      settings.paperColor
-    );
+    const imageResources: { url: string }[] = [];
+
+    for (const src of sources) {
+      const result = await renderStamp(
+        src,
+        options,
+        Math.min(settings.resolution, 2160),
+        settings.transparent,
+        settings.paperColor
+      );
+      imageResources.push({ url: result.dataUrl });
+    }
 
     const title = noteData?.title || 'Stamp Maker 专属复古邮票 💌';
     const content =
@@ -166,7 +206,7 @@ export async function postStampToXhsNote(
       tags: noteData?.tags || '#StampMaker',
       pageType: 'photo_publish',
       mediaInfo: {
-        image_resources: [{ url: result.dataUrl }],
+        image_resources: imageResources,
       },
     });
 
@@ -248,6 +288,6 @@ export function triggerConfetti() {
       disableForReducedMotion: true,
     });
   } catch (e) {
-    // Ignore confetti errors if blocked
+    // Ignore in non-DOM test env
   }
 }

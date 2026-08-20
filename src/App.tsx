@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Area } from 'react-easy-crop';
-import { AppStep, AspectRatioId, StampOptions, ImageState } from './types';
+import { AppStep, AspectRatioId, StampOptions, ImageItem } from './types';
 import { DEFAULT_STAMP_OPTIONS } from './utils/constants';
 import { loadPreferences, savePreferences } from './utils/storage';
 import { Toast, ToastMessage } from './components/common/Toast';
@@ -13,14 +12,7 @@ export const App: React.FC = () => {
   const [selectedRatio, setSelectedRatio] = useState<AspectRatioId>('3:4');
   const [toast, setToast] = useState<ToastMessage | null>(null);
 
-  const [imageState, setImageState] = useState<ImageState>({
-    file: null,
-    name: '',
-    rawUrl: null,
-    croppedUrl: null,
-    croppedAreaPixels: null,
-  });
-
+  const [images, setImages] = useState<ImageItem[]>([]);
   const [stampOptions, setStampOptions] = useState<StampOptions>(DEFAULT_STAMP_OPTIONS);
 
   // Load preferences from localStorage on mount
@@ -45,31 +37,29 @@ export const App: React.FC = () => {
     });
   };
 
-  // Step 1: User selects an image or sample
-  const handleImageSelected = (file: File, url: string) => {
-    setImageState({
-      file,
-      name: file.name,
-      rawUrl: url,
+  // Step 1: User selects one or multiple images
+  const handleImagesSelected = (items: { file: File; url: string }[]) => {
+    const newItems: ImageItem[] = items.map((item, index) => ({
+      id: `${Date.now()}-${index}`,
+      file: item.file,
+      name: item.file.name,
+      rawUrl: item.url,
       croppedUrl: null,
       croppedAreaPixels: null,
-    });
+      ratioId: selectedRatio,
+      rotation: 0,
+    }));
+    setImages(newItems);
     setCurrentStep('crop');
   };
 
-  // Step 2: User completes crop
-  const handleCropComplete = (
-    croppedUrl: string,
-    pixelCrop: Area,
-    ratioId: AspectRatioId
-  ) => {
-    setImageState((prev) => ({
-      ...prev,
-      croppedUrl,
-      croppedAreaPixels: pixelCrop,
-    }));
-    setSelectedRatio(ratioId);
-    savePreferences({ ratioId });
+  // Step 2: User completes cropping for all images
+  const handleAllCropsComplete = (croppedImages: ImageItem[]) => {
+    setImages(croppedImages);
+    if (croppedImages.length > 0 && croppedImages[0].ratioId) {
+      setSelectedRatio(croppedImages[0].ratioId);
+      savePreferences({ ratioId: croppedImages[0].ratioId });
+    }
     setCurrentStep('edit');
   };
 
@@ -86,19 +76,15 @@ export const App: React.FC = () => {
 
   // Reset to start
   const handleReset = () => {
-    if (imageState.rawUrl && imageState.rawUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(imageState.rawUrl);
-    }
-    if (imageState.croppedUrl && imageState.croppedUrl.startsWith('blob:')) {
-      URL.revokeObjectURL(imageState.croppedUrl);
-    }
-    setImageState({
-      file: null,
-      name: '',
-      rawUrl: null,
-      croppedUrl: null,
-      croppedAreaPixels: null,
+    images.forEach((img) => {
+      if (img.rawUrl && img.rawUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(img.rawUrl);
+      }
+      if (img.croppedUrl && img.croppedUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(img.croppedUrl);
+      }
     });
+    setImages([]);
     setCurrentStep('start');
   };
 
@@ -108,27 +94,27 @@ export const App: React.FC = () => {
       <main className="w-full">
         {currentStep === 'start' && (
           <StartView
-            onImageSelected={handleImageSelected}
+            onImagesSelected={handleImagesSelected}
             onToast={showToast}
           />
         )}
 
-        {currentStep === 'crop' && imageState.rawUrl && (
+        {currentStep === 'crop' && images.length > 0 && (
           <CropView
-            imageUrl={imageState.rawUrl}
+            images={images}
             initialRatio={selectedRatio}
             onBack={handleReset}
-            onCropComplete={handleCropComplete}
+            onAllCropsComplete={handleAllCropsComplete}
           />
         )}
 
-        {currentStep === 'edit' && imageState.croppedUrl && (
+        {currentStep === 'edit' && images.length > 0 && (
           <EditorView
-            croppedImageUrl={imageState.croppedUrl}
+            images={images}
             options={stampOptions}
             onOptionsChange={handleStampOptionsChange}
             onBackToCrop={() => setCurrentStep('crop')}
-            originalFileName={imageState.name}
+            originalFileName={images[0]?.name}
             onToast={showToast}
           />
         )}

@@ -6,11 +6,11 @@ import { isXhsMiniTool } from "../../utils/exportStamp";
 import logoImg from "../../assets/logo.png";
 
 interface StartViewProps {
-  onImageSelected: (file: File, url: string) => void;
+  onImagesSelected: (items: { file: File; url: string }[]) => void;
   onToast?: (type: 'success' | 'error', message: string) => void;
 }
 
-export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }) => {
+export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -24,28 +24,35 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
       const items = e.clipboardData?.items;
       if (!items) return;
 
+      const collected: { file: File; url: string }[] = [];
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf("image") !== -1) {
           const file = items[i].getAsFile();
           if (file) {
             const url = URL.createObjectURL(file);
-            onImageSelected(file, url);
-            break;
+            collected.push({ file, url });
           }
         }
+      }
+      if (collected.length > 0) {
+        onImagesSelected(collected);
       }
     };
 
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
-  }, [onImageSelected]);
+  }, [onImagesSelected]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      const file = files[0];
-      const url = URL.createObjectURL(file);
-      onImageSelected(file, url);
+      const items: { file: File; url: string }[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const url = URL.createObjectURL(file);
+        items.push({ file, url });
+      }
+      onImagesSelected(items);
     }
   };
 
@@ -65,7 +72,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
               const file = new File([blob], `${sampleTitle.toLowerCase().replace(/\s+/g, "-")}.png`, {
                 type: "image/png",
               });
-              onImageSelected(file, sampleUrl);
+              onImagesSelected([{ file, url: sampleUrl }]);
             }
             setIsProcessing(false);
           }, "image/png");
@@ -115,12 +122,13 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
 
   return (
     <div className='min-h-screen bg-paper flex flex-col justify-between py-4 px-4 sm:px-6 max-w-md mx-auto relative select-none safe-top'>
-      {/* Hidden File Inputs */}
+      {/* Hidden File Inputs (multiple support) */}
       <input
         type='file'
         ref={fileInputRef}
         onChange={handleFileChange}
         accept='image/png,image/jpeg,image/jpg,image/webp'
+        multiple
         className='hidden'
       />
       <input
@@ -132,9 +140,8 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
         className='hidden'
       />
 
-      {/* Top Hero Section (Codex-Resets Sticker Neo-Brutalism) */}
+      {/* Top Hero Section */}
       <div className='relative flex flex-col items-center justify-center pt-1 pb-4 text-center'>
-        {/* Logo Sticker with physical tilt */}
         <div className='w-16 h-16 mb-2 rounded-2xl overflow-hidden shadow-neo border-2 border-ink bg-card p-1 rotate-[1.5deg] hover:rotate-0 transition-transform duration-200'>
           <img src={logoImg} alt='Stamp Maker Logo' className='w-full h-full object-cover rounded-xl' />
         </div>
@@ -143,9 +150,9 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
         <p className='text-xs font-semibold text-ink-2 mt-1'>把日常照片，变成复古物理齿孔小邮票 💌</p>
       </div>
 
-      {/* Main Action Cards (Stacked Cards) */}
+      {/* Main Action Cards */}
       <div className='space-y-2.5 mb-4'>
-        {/* Upload Card (Sunny Yellow Accent) */}
+        {/* Upload Card (Supports Multiple Photos) */}
         <button
           type='button'
           onClick={() => fileInputRef.current?.click()}
@@ -156,8 +163,11 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
               <ImageIcon className='w-5 h-5 stroke-[2.2]' />
             </div>
             <div>
-              <div className='font-extrabold text-ink text-sm leading-tight'>从相册上传</div>
-              <div className='text-[11px] font-medium text-ink-2 mt-0.5'>选取手机里的相片</div>
+              <div className='flex items-center gap-1.5'>
+                <span className='font-extrabold text-ink text-sm leading-tight'>从相册上传</span>
+                <span className='font-mono text-[9.5px] font-bold text-accent bg-accent/10 px-1.5 py-0.2 rounded border border-accent/30'>支持多选</span>
+              </div>
+              <div className='text-[11px] font-medium text-ink-2 mt-0.5'>支持批量选择多张照片</div>
             </div>
           </div>
           <div className='w-7 h-7 rounded-full bg-ink text-white flex items-center justify-center shadow-neo-sm group-hover:translate-x-0.5 transition-transform'>
@@ -165,7 +175,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
           </div>
         </button>
 
-        {/* Camera Card (Mint Accent) */}
+        {/* Camera Card */}
         <button
           type='button'
           onClick={() => cameraInputRef.current?.click()}

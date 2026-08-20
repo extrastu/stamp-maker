@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Copy, SlidersHorizontal } from 'lucide-react';
-import { StampOptions, StampStyleId } from '../../types';
+import { ArrowLeft, Download, Copy, SlidersHorizontal, Layers } from 'lucide-react';
+import { StampOptions, StampStyleId, ImageItem } from '../../types';
 import { StampPreview } from './StampPreview';
 import { COLOR_PRESETS, DEFAULT_EXPORT_SETTINGS, STAMP_STYLES } from '../../utils/constants';
 import { ExportModal } from '../export/ExportModal';
 import { PostNoteModal } from '../export/PostNoteModal';
-import { copyStampToClipboard, downloadStamp, isXhsMiniTool } from '../../utils/exportStamp';
+import { copyStampToClipboard, downloadStamp, downloadMultipleStamps, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface EditorViewProps {
-  croppedImageUrl: string;
+  images: ImageItem[];
   options: StampOptions;
   onOptionsChange: (options: StampOptions) => void;
   onBackToCrop: () => void;
@@ -17,18 +17,22 @@ interface EditorViewProps {
 }
 
 export const EditorView: React.FC<EditorViewProps> = ({
-  croppedImageUrl,
+  images,
   options,
   onOptionsChange,
   onBackToCrop,
   originalFileName,
   onToast,
 }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isPostNoteModalOpen, setIsPostNoteModalOpen] = useState(false);
   const [isQuickCopying, setIsQuickCopying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const isXhs = isXhsMiniTool();
+
+  const currentImage = images[activeIndex] || images[0];
+  const activeImageUrl = currentImage?.croppedUrl || currentImage?.rawUrl || '';
 
   const handleSelectStyle = (styleId: StampStyleId) => {
     const preset = STAMP_STYLES.find((s) => s.id === styleId);
@@ -56,16 +60,27 @@ export const EditorView: React.FC<EditorViewProps> = ({
     });
   };
 
-  const handleSaveDirectly = async () => {
+  const handleSaveAllOrCurrent = async () => {
     try {
       setIsSaving(true);
-      const res = await downloadStamp(
-        croppedImageUrl,
-        options,
-        DEFAULT_EXPORT_SETTINGS,
-        originalFileName
-      );
-      onToast(res.success ? 'success' : 'error', res.message);
+      if (images.length > 1) {
+        const sources = images.map((img) => img.croppedUrl || img.rawUrl);
+        const res = await downloadMultipleStamps(
+          sources,
+          options,
+          DEFAULT_EXPORT_SETTINGS,
+          originalFileName
+        );
+        onToast(res.success ? 'success' : 'error', res.message);
+      } else {
+        const res = await downloadStamp(
+          activeImageUrl,
+          options,
+          DEFAULT_EXPORT_SETTINGS,
+          originalFileName
+        );
+        onToast(res.success ? 'success' : 'error', res.message);
+      }
     } catch (err) {
       console.error('Save error', err);
       onToast('error', '保存失败');
@@ -78,7 +93,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
     try {
       setIsQuickCopying(true);
       const res = await copyStampToClipboard(
-        croppedImageUrl,
+        activeImageUrl,
         options,
         DEFAULT_EXPORT_SETTINGS
       );
@@ -109,10 +124,18 @@ export const EditorView: React.FC<EditorViewProps> = ({
           <span>重新构图</span>
         </button>
 
+        {/* Center badge if multiple */}
+        {images.length > 1 && (
+          <div className="inline-flex items-center gap-1 bg-sun border-2 border-ink px-2.5 py-0.5 rounded-full shadow-neo-sm text-[11px] font-mono font-bold text-ink">
+            <Layers className="size-3 stroke-[2.5]" />
+            <span>共 {images.length} 张邮票</span>
+          </div>
+        )}
+
         <button
           type="button"
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex h-7 items-center gap-1 rounded-xl bg-sun border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
+          className="inline-flex h-7 items-center gap-1 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
           title="导出参数"
         >
           <SlidersHorizontal className="size-3 stroke-[2.5]" />
@@ -121,11 +144,36 @@ export const EditorView: React.FC<EditorViewProps> = ({
       </div>
 
       {/* 2. Main Stamp Live Preview Stage */}
-      <div className="flex-1 min-h-0 flex items-center justify-center px-3 py-1 overflow-hidden">
-        <StampPreview
-          croppedImageUrl={croppedImageUrl}
-          options={options}
-        />
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center px-3 py-1 overflow-hidden relative">
+        <div className="flex-1 min-h-0 w-full flex items-center justify-center">
+          <StampPreview
+            croppedImageUrl={activeImageUrl}
+            options={options}
+          />
+        </div>
+
+        {/* Thumbnail Selector Strip if multiple images */}
+        {images.length > 1 && (
+          <div className="shrink-0 flex items-center gap-2 max-w-full overflow-x-auto no-scrollbar py-1 px-2 bg-card/80 backdrop-blur-xs border-2 border-ink rounded-2xl shadow-neo-sm">
+            {images.map((img, idx) => {
+              const isSelected = idx === activeIndex;
+              return (
+                <button
+                  key={img.id || idx}
+                  type="button"
+                  onClick={() => setActiveIndex(idx)}
+                  className={`size-8 rounded-lg border-2 overflow-hidden shrink-0 transition-all ${
+                    isSelected
+                      ? 'border-ink shadow-neo-sm ring-2 ring-sun scale-110'
+                      : 'border-ink/40 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <img src={img.croppedUrl || img.rawUrl} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* 3. Customization Control Panel */}
@@ -256,12 +304,22 @@ export const EditorView: React.FC<EditorViewProps> = ({
           {/* Main Primary CTA Button */}
           <button
             type="button"
-            onClick={handleSaveDirectly}
+            onClick={handleSaveAllOrCurrent}
             disabled={isSaving}
             className="w-full h-10 rounded-xl bg-accent hover:bg-accent-hover text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 border-2 border-ink shadow-neo btn-neo transition-all disabled:opacity-50"
           >
             <Download className="size-3.5 stroke-[2.5]" />
-            <span>{isSaving ? '生成中...' : isXhs ? '保存邮票到手机相册 📬' : '保存高清邮票图片 📬'}</span>
+            <span>
+              {isSaving
+                ? '正在生成中...'
+                : images.length > 1
+                ? isXhs
+                  ? `一键保存全部 (${images.length}张) 邮票到相册 📬`
+                  : `一键批量下载全部 (${images.length}张) 邮票 📬`
+                : isXhs
+                ? '保存邮票到手机相册 📬'
+                : '保存高清邮票图片 📬'}
+            </span>
           </button>
 
           {/* Secondary Action Row */}
@@ -272,7 +330,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
               className="h-8 rounded-xl bg-rose border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all"
             >
               <span>📕</span>
-              <span>发布小红书图文</span>
+              <span>发布小红书图文 {images.length > 1 && `(${images.length}张)`}</span>
             </button>
 
             <button
@@ -282,7 +340,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
               className="h-8 rounded-xl bg-sky border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all disabled:opacity-50"
             >
               <Copy className="size-3 stroke-[2.5] text-ink" />
-              <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
+              <span>{isQuickCopying ? '复制中...' : images.length > 1 ? '复制当前透明图' : '复制透明图'}</span>
             </button>
           </div>
         </div>
@@ -292,7 +350,8 @@ export const EditorView: React.FC<EditorViewProps> = ({
       <PostNoteModal
         isOpen={isPostNoteModalOpen}
         onClose={() => setIsPostNoteModalOpen(false)}
-        croppedImageUrl={croppedImageUrl}
+        images={images}
+        croppedImageUrl={activeImageUrl}
         options={options}
         onToast={onToast}
       />
@@ -301,9 +360,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
-        croppedImageUrl={croppedImageUrl}
+        croppedImageUrl={activeImageUrl}
         options={options}
-        originalFileName={originalFileName}
+        originalFileName={currentImage?.name || originalFileName}
         onToast={onToast}
       />
     </div>

@@ -52,6 +52,17 @@ export interface UserPreferences {
 
 export type AppStep = 'start' | 'crop' | 'edit';
 
+export interface ImageItem {
+  id: string;
+  file: File | null;
+  name: string;
+  rawUrl: string;
+  croppedUrl: string | null;
+  croppedAreaPixels: Area | null;
+  ratioId: AspectRatioId;
+  rotation: number;
+}
+
 export interface ImageState {
   file: File | null;
   name: string;

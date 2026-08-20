@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send } from 'lucide-react';
-import { StampOptions, ExportSettings } from '../../types';
+import { StampOptions, ExportSettings, ImageItem } from '../../types';
 import { renderStamp } from '../../utils/renderStamp';
 import { postStampToXhsNote, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface PostNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
-  croppedImageUrl: string;
+  croppedImageUrl?: string;
+  images?: ImageItem[];
   options: StampOptions;
   onToast: (type: 'success' | 'error', message: string) => void;
 }
@@ -25,35 +26,48 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
   isOpen,
   onClose,
   croppedImageUrl,
+  images = [],
   options,
   onToast,
 }) => {
   const [title, setTitle] = useState(DEFAULT_TITLES[0]);
   const [content, setContent] = useState(DEFAULT_CONTENT);
-  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [activePreviewIndex, setActivePreviewIndex] = useState(0);
   const [isPosting, setIsPosting] = useState(false);
   const [includeBackdrop, setIncludeBackdrop] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) return;
+  const imageSources: string[] =
+    images.length > 0
+      ? images.map((img) => img.croppedUrl || img.rawUrl)
+      : croppedImageUrl
+      ? [croppedImageUrl]
+      : [];
 
-    const preparePreview = async () => {
+  useEffect(() => {
+    if (!isOpen || imageSources.length === 0) return;
+
+    const preparePreviews = async () => {
       try {
-        const res = await renderStamp(
-          croppedImageUrl,
-          options,
-          1080,
-          !includeBackdrop,
-          '#FFF4DD'
-        );
-        setPreviewUrl(res.dataUrl);
+        const urls: string[] = [];
+        for (const src of imageSources) {
+          const res = await renderStamp(
+            src,
+            options,
+            1080,
+            !includeBackdrop,
+            '#FFF4DD'
+          );
+          urls.push(res.dataUrl);
+        }
+        setPreviewUrls(urls);
       } catch (e) {
-        console.error('Failed to prepare note image preview', e);
+        console.error('Failed to prepare note image previews', e);
       }
     };
 
-    preparePreview();
-  }, [isOpen, croppedImageUrl, options, includeBackdrop]);
+    preparePreviews();
+  }, [isOpen, options, includeBackdrop, images.length, croppedImageUrl]);
 
   if (!isOpen) return null;
 
@@ -75,7 +89,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
 
       if (isXhsMiniTool()) {
         const res = await postStampToXhsNote(
-          croppedImageUrl,
+          imageSources,
           options,
           exportSettings,
           {
@@ -88,7 +102,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
         if (res.success) onClose();
       } else {
         // Fallback simulation in browser
-        onToast('success', '已生成小红书图文笔记（当前处于浏览器模拟环境）');
+        onToast('success', `已生成包含 ${imageSources.length} 张邮票的小红书图文笔记（浏览器模拟环境）`);
         setTimeout(() => {
           onClose();
         }, 1200);
@@ -100,6 +114,8 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
       setIsPosting(false);
     }
   };
+
+  const currentPreview = previewUrls[activePreviewIndex] || previewUrls[0] || '';
 
   return (
     <div
@@ -117,8 +133,10 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
               📕
             </div>
             <div>
-              <h3 className="font-extrabold text-[15px] text-ink leading-tight">创建小红书图文</h3>
-              <p className="text-[11px] text-ink-2 mt-0.5 font-medium">将邮票一键带入小红书发布页</p>
+              <h3 className="font-extrabold text-[15px] text-ink leading-tight">
+                创建小红书图文 {imageSources.length > 1 && `(${imageSources.length}张)`}
+              </h3>
+              <p className="text-[11px] text-ink-2 mt-0.5 font-medium">将制作好的邮票一键带入发布页</p>
             </div>
           </div>
           <button
@@ -136,7 +154,9 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
           {/* Note Photo Preview */}
           <div>
             <div className="text-xs font-extrabold text-ink mb-2 flex items-center justify-between px-0.5">
-              <span>封面配图预览</span>
+              <span>
+                封面配图预览 {imageSources.length > 1 && `(${activePreviewIndex + 1}/${imageSources.length})`}
+              </span>
               <button
                 type="button"
                 onClick={() => setIncludeBackdrop(!includeBackdrop)}
@@ -145,17 +165,38 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
                 {includeBackdrop ? '切换为透明底' : '切换为衬纸底'}
               </button>
             </div>
-            <div className="w-full h-40 rounded-2xl bg-card border-2 border-ink flex items-center justify-center p-3 relative overflow-hidden shadow-neo-sm">
-              {previewUrl ? (
+
+            <div className="w-full h-36 rounded-2xl bg-card border-2 border-ink flex items-center justify-center p-3 relative overflow-hidden shadow-neo-sm">
+              {currentPreview ? (
                 <img
-                  src={previewUrl}
-                  alt="Note Stamp"
+                  src={currentPreview}
+                  alt="Note Stamp Preview"
                   className="max-h-full object-contain drop-shadow-[0_8px_18px_rgba(40,30,20,0.15)]"
                 />
               ) : (
                 <div className="size-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
               )}
             </div>
+
+            {/* If multiple images, show preview thumbnails */}
+            {previewUrls.length > 1 && (
+              <div className="flex items-center gap-1.5 pt-2 overflow-x-auto no-scrollbar">
+                {previewUrls.map((url, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActivePreviewIndex(idx)}
+                    className={`size-9 rounded-lg border-2 overflow-hidden shrink-0 transition-all ${
+                      idx === activePreviewIndex
+                        ? 'border-ink shadow-neo scale-105'
+                        : 'border-ink/40 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={url} alt={`Thumb ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Title Input */}
@@ -194,7 +235,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
               <span className="font-mono text-[10.5px] font-bold text-ink-3 tabular-nums">{content.length}/1000</span>
             </div>
             <textarea
-              rows={4}
+              rows={3}
               maxLength={1000}
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -213,7 +254,13 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
             className="w-full h-11 rounded-2xl bg-accent hover:bg-accent-hover text-white font-extrabold text-sm flex items-center justify-center gap-2 border-2 border-ink shadow-neo-lg btn-neo transition-all disabled:opacity-50"
           >
             <Send className="size-4 stroke-[2.5]" />
-            <span>{isPosting ? '拉起小红书中...' : '发布到小红书笔记 🚀'}</span>
+            <span>
+              {isPosting
+                ? '拉起小红书中...'
+                : imageSources.length > 1
+                ? `一键发布全部 (${imageSources.length}张) 笔记 🚀`
+                : '发布到小红书笔记 🚀'}
+            </span>
           </button>
         </div>
       </div>
