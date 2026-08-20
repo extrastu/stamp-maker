@@ -37,7 +37,10 @@ export function generateFileName(
 
 /**
  * High-resolution Stamp Exporter
- * Supports XHS JSBridge saveImageToPhotosAlbum & Web Download Fallback
+ * Strictly implements XHS MiniTool JSBridge:
+ * 1. writeTempFile({ data: dataUrl }) -> { filePath }
+ * 2. saveImageToPhotosAlbum({ filePath })
+ * With standard browser fallback.
  */
 export async function downloadStamp(
   imageSource: string | HTMLImageElement,
@@ -58,28 +61,35 @@ export async function downloadStamp(
   // 1. If in XHS MiniTool container, use JSBridge save to album
   if (isXhsMiniTool() && window.xhs?.miniTool) {
     try {
-      const tempFileRes = await window.xhs.miniTool.writeTempFile({
+      // Step A: writeTempFile to get local temp filePath
+      const tempRes = await window.xhs.miniTool.writeTempFile({
         data: dataUrl,
       });
 
+      const filePath = tempRes?.filePath || dataUrl;
+
+      // Step B: saveImageToPhotosAlbum
       await window.xhs.miniTool.saveImageToPhotosAlbum({
-        filePath: tempFileRes.filePath || dataUrl,
+        filePath,
       });
 
       triggerConfetti();
       return { success: true, message: '邮票已成功保存到系统相册！' };
     } catch (err: any) {
       console.error('JSBridge saveImageToPhotosAlbum error', err);
-      // Try direct dataUrl fallback
+      // Direct dataUrl fallback if writeTempFile had issue
       try {
         await window.xhs.miniTool.saveImageToPhotosAlbum({
           filePath: dataUrl,
         });
         triggerConfetti();
         return { success: true, message: '邮票已成功保存到系统相册！' };
-      } catch (directErr) {
-        console.error('Direct JSBridge save failed', directErr);
-        return { success: false, message: '保存相册失败，请检查相册权限' };
+      } catch (fallbackErr: any) {
+        console.error('Fallback save failed', fallbackErr);
+        return {
+          success: false,
+          message: err?.errMsg || fallbackErr?.errMsg || '保存相册失败，请检查相册权限',
+        };
       }
     }
   }
@@ -121,7 +131,7 @@ export async function downloadStamp(
 }
 
 /**
- * Publish Stamp directly to XHS Note via JSBridge
+ * Publish Stamp directly to XHS Note via JSBridge postNote
  */
 export async function postStampToXhsNote(
   imageSource: string | HTMLImageElement,
@@ -145,7 +155,7 @@ export async function postStampToXhsNote(
     const title = noteData?.title || 'Stamp Maker 专属复古邮票 💌';
     const content =
       noteData?.content ||
-      '用 Stamp Maker 制作的复古齿孔小邮票！氛围感拉满 ✨ #StampMaker #小红书小工具 #手账 #邮票';
+      '用 Stamp Maker 制作的专属复古齿孔小邮票！氛围感拉满 ✨ #StampMaker #小红书小工具 #手账 #邮票';
 
     await window.xhs.miniTool.postNote({
       title,
