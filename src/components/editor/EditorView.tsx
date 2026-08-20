@@ -91,82 +91,83 @@ export const EditorView: React.FC<EditorViewProps> = ({
     }
   };
 
-  // Slider progress percentage for purple track fill
+  // Slider progress percentage
   const minMargin = 4;
   const maxMargin = 40;
   const sliderPercentage = Math.max(0, Math.min(100, ((options.margin - minMargin) / (maxMargin - minMargin)) * 100));
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-neutral-900 flex flex-col justify-between max-w-md mx-auto relative select-none">
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#FAF7F2] text-ink flex flex-col justify-between max-w-md mx-auto relative select-none">
       {/* 1. Top Navigation Row */}
-      <div className="px-4 pt-3.5 pb-1 flex items-center justify-between z-10 safe-top">
+      <div className="shrink-0 px-4 pt-2 pb-1 flex items-center justify-between z-10 safe-top">
         <button
           type="button"
           onClick={onBackToCrop}
-          className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-neutral-900 bg-white/90 hover:bg-white px-3.5 py-1.5 rounded-full shadow-xs border border-neutral-200/80 backdrop-blur-xs transition-all active:scale-[0.97]"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-[12px] font-bold text-neutral-900 shadow-sm border border-neutral-200 hover:bg-neutral-50 active:scale-[0.97] transition-all"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
+          <ArrowLeft className="size-3.5 stroke-[2.2]" />
           <span>重新构图</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsExportModalOpen(true)}
-          className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-900 px-2 py-1 rounded-lg hover:bg-neutral-200/50 transition-colors"
-          title="高级导出设置"
+          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-[12px] font-bold text-neutral-900 shadow-sm border border-neutral-200 hover:bg-neutral-50 active:scale-[0.97] transition-all"
+          title="导出参数"
         >
-          <SlidersHorizontal className="w-3.5 h-3.5" />
-          <span>导出设置</span>
+          <SlidersHorizontal className="size-3.5 stroke-[2.2]" />
+          <span>导出参数</span>
         </button>
       </div>
 
-      {/* 2. Main Stamp Live Preview Stage */}
-      <div className="flex-1 flex items-center justify-center px-4 py-2 min-h-[260px] overflow-hidden">
+      {/* 2. Main Stamp Live Preview Stage (Flexes to available space) */}
+      <div className="flex-1 min-h-0 flex items-center justify-center px-4 py-2 overflow-hidden">
         <StampPreview
           croppedImageUrl={croppedImageUrl}
           options={options}
         />
       </div>
 
-      {/* 3. Customization Control Panel (Card Style) */}
-      <div className="p-4 sm:p-5 bg-white rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.04)] border-t border-neutral-100 space-y-4 safe-bottom">
-        {/* Border Styles (边框样式) */}
+      {/* 3. Customization Control Panel */}
+      <div className="shrink-0 p-4 bg-white rounded-t-3xl shadow-float border-t border-[#ECE7DE] space-y-3.5 safe-bottom">
+        {/* Style Selector (Segmented Tabs) */}
         <div>
-          <div className="text-xs text-neutral-500 mb-2 font-medium">边框样式</div>
-          <div className="grid grid-cols-3 gap-2.5">
+          <div className="flex items-center justify-between text-xs text-neutral-900 font-bold mb-1.5 px-0.5">
+            <span>齿孔样式</span>
+            <span className="font-mono text-[11px] text-neutral-500">
+              {options.style === 'classic' ? '标准齿' : options.style === 'fine' ? '密齿' : '大齿'}
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
             {[
-              { id: 'classic' as const, name: '标准', desc: '经典齿孔' },
-              { id: 'fine' as const, name: '密齿', desc: '高密复古' },
-              { id: 'wide' as const, name: '大齿', desc: '现代艺术' },
+              { id: 'classic' as const, name: '标准齿' },
+              { id: 'fine' as const, name: '复古密齿' },
+              { id: 'wide' as const, name: '艺术大齿' },
             ].map((style) => {
               const isSelected = options.style === style.id;
               return (
                 <button
                   key={style.id}
+                  type="button"
                   onClick={() => handleSelectStyle(style.id)}
-                  className={`py-2.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all relative ${
+                  className={`h-8 rounded-xl text-xs font-bold transition-all text-center select-none flex items-center justify-center ${
                     isSelected
-                      ? 'bg-[#F4F1FD] border-2 border-[#7059E8] shadow-xs'
-                      : 'bg-[#F8F7F4] border border-neutral-200/70 hover:bg-[#F0EEEA]'
+                      ? 'bg-[#F4F1FD] border-2 border-[#5B4BD8] text-[#5B4BD8] shadow-xs'
+                      : 'bg-[#F8F6F2] border border-neutral-200 text-neutral-900 hover:bg-[#F2ECE2]'
                   }`}
                 >
-                  <div className="w-6 h-6 rounded-[2px] border border-dashed border-neutral-400 flex items-center justify-center">
-                    <div className="w-3.5 h-3.5 bg-neutral-300 rounded-[1px]" />
-                  </div>
-                  <span className={`text-xs font-semibold ${isSelected ? 'text-[#7059E8]' : 'text-neutral-700'}`}>
-                    {style.name}
-                  </span>
+                  {style.name}
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Margin Slider (边距) */}
+        {/* Margin Slider */}
         <div>
-          <div className="flex items-center justify-between text-xs text-neutral-500 mb-1.5 font-medium">
+          <div className="flex items-center justify-between text-xs text-neutral-900 font-bold mb-1 px-0.5">
             <span>留白边距</span>
-            <span className="text-[#7059E8] font-mono font-bold bg-[#F4F1FD] px-2 py-0.5 rounded-md text-[11px]">
+            <span className="font-mono text-[11px] text-[#5B4BD8] font-bold bg-[#F4F1FD] px-2 py-0.5 rounded-md border border-[#5B4BD8]/20">
               {options.margin}px
             </span>
           </div>
@@ -177,27 +178,28 @@ export const EditorView: React.FC<EditorViewProps> = ({
             value={options.margin}
             onChange={(e) => handleMarginChange(Number(e.target.value))}
             style={{
-              background: `linear-gradient(to right, #7059E8 ${sliderPercentage}%, #E8E6E0 ${sliderPercentage}%)`,
+              background: `linear-gradient(to right, #5B4BD8 ${sliderPercentage}%, #ECE7DE ${sliderPercentage}%)`,
             }}
             aria-label="调整留白边距"
           />
         </div>
 
-        {/* Background Color Selector (背景颜色) */}
+        {/* Background Color Selector */}
         <div>
-          <div className="text-xs text-neutral-500 mb-2 font-medium">背景颜色</div>
+          <div className="text-xs text-neutral-900 font-bold mb-1.5 px-0.5">衬纸底色</div>
           <div className="flex items-center justify-between gap-2 px-1">
             {COLOR_PRESETS.map((color) => {
               const isSelected = options.backgroundColor.toLowerCase() === color.hex.toLowerCase();
               return (
                 <button
                   key={color.id}
+                  type="button"
                   onClick={() => handleSelectColor(color.hex)}
                   style={{ backgroundColor: color.hex }}
-                  className={`w-8 h-8 rounded-full border transition-all relative ${
+                  className={`size-7 rounded-full border transition-all duration-150 relative ${
                     isSelected
-                      ? 'ring-2 ring-[#7059E8] ring-offset-2 scale-110 border-neutral-300 shadow-sm'
-                      : 'border-neutral-300/80 hover:scale-105 shadow-xs'
+                      ? 'ring-2 ring-[#5B4BD8] ring-offset-2 scale-110 border-neutral-400 shadow-sm'
+                      : 'border-neutral-300 hover:scale-105 shadow-xs'
                   }`}
                   aria-label={color.name}
                 />
@@ -206,42 +208,40 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons Section */}
-        <div className="pt-2 space-y-2.5">
-          {/* Main Primary CTA: Post to Little Red Book Note */}
+        {/* Action Buttons */}
+        <div className="pt-1 space-y-2">
+          {/* Main Primary CTA Button */}
           <button
-            onClick={() => setIsPostNoteModalOpen(true)}
-            className="w-full h-12 rounded-2xl bg-[#E03A3E] hover:bg-[#C92F33] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-red-200 active:scale-[0.98]"
+            type="button"
+            onClick={handleSaveDirectly}
+            disabled={isSaving}
+            className="w-full h-11 rounded-2xl bg-[#5B4BD8] hover:bg-[#4E3EC8] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-purple-900/20 active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            <span className="text-base">📕</span>
-            <span>创建小红书图文笔记</span>
+            <Download className="size-4 stroke-[2.4]" />
+            <span>{isSaving ? '生成中...' : isXhs ? '保存邮票到手机相册' : '保存高清邮票图片'}</span>
           </button>
 
-          {/* Secondary Action Buttons Grid */}
-          <div className="grid grid-cols-2 gap-2.5">
+          {/* Secondary Action Row */}
+          <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={handleSaveDirectly}
-              disabled={isSaving}
-              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98] disabled:opacity-50"
+              type="button"
+              onClick={() => setIsPostNoteModalOpen(true)}
+              className="h-9 rounded-xl bg-white border border-neutral-300 hover:bg-[#FAF7F2] text-neutral-900 font-bold text-xs flex items-center justify-center gap-1 shadow-xs active:scale-[0.98] transition-all"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>{isSaving ? '正在保存...' : isXhs ? '保存到手机相册' : '保存高清图片'}</span>
+              <span>📕</span>
+              <span>发布小红书图文</span>
             </button>
 
             <button
+              type="button"
               onClick={handleCopyClipboard}
               disabled={isQuickCopying}
-              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
+              className="h-9 rounded-xl bg-white border border-neutral-300 hover:bg-[#FAF7F2] text-neutral-900 font-bold text-xs flex items-center justify-center gap-1 shadow-xs active:scale-[0.98] transition-all disabled:opacity-50"
             >
-              <Copy className="w-3.5 h-3.5" />
+              <Copy className="size-3.5 text-[#5B4BD8] stroke-[2.2]" />
               <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
             </button>
           </div>
-        </div>
-
-        {/* Quality Tip */}
-        <div className="text-center text-[11px] text-neutral-400 font-normal pt-0.5">
-          支持一键拉起小红书发布图文 · 图片纯本地安全处理
         </div>
       </div>
 

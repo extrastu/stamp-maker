@@ -23,11 +23,11 @@ body {
 
 /* Safe Area Insets */
 .safe-top {
-  padding-top: max(0.5rem, var(--safe-area-inset-top, env(safe-area-inset-top, 0px)));
+  padding-top: max(3.75rem, calc(3.25rem + var(--safe-area-inset-top, env(safe-area-inset-top, 0px))));
 }
 
 .safe-bottom {
-  padding-bottom: max(0.5rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
+  padding-bottom: max(0.75rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 }
 
 /* Custom modern range sliders */

@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Image as ImageIcon, Camera, Settings, X } from "lucide-react";
+import { Image as ImageIcon, Camera, X } from "lucide-react";
 import { SampleStamp } from "./SampleStamp";
 import { OFFLINE_SAMPLES } from "../../utils/sampleImages";
+import logoImg from "../../assets/logo.png";
 
 interface StartViewProps {
   onImageSelected: (file: File, url: string) => void;
@@ -23,7 +24,8 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
         if (items[i].type.indexOf("image") !== -1) {
           const file = items[i].getAsFile();
           if (file) {
-            processFile(file);
+            const url = URL.createObjectURL(file);
+            onImageSelected(file, url);
             break;
           }
         }
@@ -32,21 +34,14 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
 
     window.addEventListener("paste", handlePaste);
     return () => window.removeEventListener("paste", handlePaste);
-  }, []);
-
-  const processFile = (file: File) => {
-    if (!file.type.startsWith("image/")) {
-      alert("请上传有效的图片文件 (JPG / PNG / WEBP)");
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    onImageSelected(file, url);
-  };
+  }, [onImageSelected]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      processFile(file);
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      const url = URL.createObjectURL(file);
+      onImageSelected(file, url);
     }
   };
 
@@ -85,7 +80,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
   };
 
   return (
-    <div className='min-h-screen bg-[#FAF8F5] flex flex-col justify-between py-6 px-4 sm:px-6 max-w-md mx-auto relative select-none'>
+    <div className='min-h-screen bg-[#FAF7F2] flex flex-col justify-between py-5 px-4 sm:px-6 max-w-md mx-auto relative select-none safe-top'>
       {/* Hidden File Inputs */}
       <input
         type='file'
@@ -103,55 +98,52 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
         className='hidden'
       />
 
-      {/* Top Header */}
-      <div className='relative text-center pt-2 pb-6'>
-        <button
-          onClick={() => setShowAbout(true)}
-          className='absolute right-0 top-3 text-neutral-600 hover:text-neutral-900 p-1.5 rounded-full hover:bg-neutral-200/60 transition-colors'
-          aria-label='设置'
-        >
-          <Settings className='w-5 h-5 stroke-[1.8]' />
-        </button>
-
-        <h1 className='text-2xl font-bold text-neutral-900 tracking-tight font-serif'>Stamp Maker</h1>
-        <p className='text-xs text-neutral-500 mt-1'>把每一张照片，变成你的专属复古邮票</p>
+      {/* Top Header with New Logo */}
+      <div className='relative flex flex-col items-center justify-center pt-1 pb-4 text-center'>
+        <div className="w-14 h-14 mb-2 rounded-2xl overflow-hidden shadow-xs border border-neutral-200/80 bg-white p-0.5">
+          <img src={logoImg} alt="Stamp Maker Logo" className="w-full h-full object-cover rounded-[14px]" />
+        </div>
+        <h1 className='text-xl font-bold text-neutral-900 tracking-tight font-serif'>Stamp Maker</h1>
+        <p className='text-xs text-neutral-500 mt-0.5'>把每一张照片，变成你的专属复古邮票</p>
       </div>
 
       {/* Main Action Cards */}
-      <div className='space-y-3.5 mb-7'>
+      <div className='space-y-3 mb-6'>
         {/* Upload Card */}
         <button
+          type="button"
           onClick={() => fileInputRef.current?.click()}
-          className='w-full flex items-center gap-4 p-4 rounded-2xl bg-[#F0F5FF] hover:bg-[#E8F0FE] border border-blue-100/60 transition-all text-left group shadow-xs active:scale-[0.99]'
+          className='w-full flex items-center gap-4 p-3.5 rounded-2xl bg-[#F0F5FF] hover:bg-[#E8F0FE] border border-blue-100/60 transition-all text-left group shadow-xs active:scale-[0.99]'
         >
-          <div className='w-12 h-12 rounded-xl bg-white flex items-center justify-center text-blue-500 shadow-xs group-hover:scale-105 transition-transform'>
-            <ImageIcon className='w-6 h-6 stroke-[1.8]' />
+          <div className='w-11 h-11 rounded-xl bg-white flex items-center justify-center text-[#2557E0] shadow-xs group-hover:scale-105 transition-transform'>
+            <ImageIcon className='w-5 h-5 stroke-[2]' />
           </div>
           <div>
-            <div className='font-semibold text-neutral-900 text-base leading-tight'>上传图片</div>
-            <div className='text-xs text-neutral-400 mt-0.5 font-normal'>从相册选择</div>
+            <div className='font-bold text-neutral-900 text-sm leading-tight'>上传图片</div>
+            <div className='text-xs text-neutral-500 mt-0.5 font-normal'>从相册选择</div>
           </div>
         </button>
 
         {/* Camera Card */}
         <button
+          type="button"
           onClick={() => cameraInputRef.current?.click()}
-          className='w-full flex items-center gap-4 p-4 rounded-2xl bg-[#F0F9F2] hover:bg-[#E6F4EA] border border-emerald-100/60 transition-all text-left group shadow-xs active:scale-[0.99]'
+          className='w-full flex items-center gap-4 p-3.5 rounded-2xl bg-[#F0F9F2] hover:bg-[#E6F4EA] border border-emerald-100/60 transition-all text-left group shadow-xs active:scale-[0.99]'
         >
-          <div className='w-12 h-12 rounded-xl bg-white flex items-center justify-center text-emerald-500 shadow-xs group-hover:scale-105 transition-transform'>
-            <Camera className='w-6 h-6 stroke-[1.8]' />
+          <div className='w-11 h-11 rounded-xl bg-white flex items-center justify-center text-[#138A3A] shadow-xs group-hover:scale-105 transition-transform'>
+            <Camera className='w-5 h-5 stroke-[2]' />
           </div>
           <div>
-            <div className='font-semibold text-neutral-900 text-base leading-tight'>拍照</div>
-            <div className='text-xs text-neutral-400 mt-0.5 font-normal'>打开相机拍摄</div>
+            <div className='font-bold text-neutral-900 text-sm leading-tight'>拍照</div>
+            <div className='text-xs text-neutral-500 mt-0.5 font-normal'>打开相机拍摄</div>
           </div>
         </button>
       </div>
 
       {/* Sample Gallery Section */}
-      <div className='flex-1 mb-6'>
-        <div className='text-xs text-neutral-400 mb-3 font-medium'>示例</div>
-        <div className='grid grid-cols-3 gap-3'>
+      <div className='flex-1 mb-5'>
+        <div className='text-xs text-neutral-500 mb-2.5 font-semibold'>示例</div>
+        <div className='grid grid-cols-3 gap-2.5'>
           {OFFLINE_SAMPLES.map((sample) => (
             <SampleStamp
               key={sample.id}
@@ -164,8 +156,14 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
       </div>
 
       {/* Bottom Footer */}
-      <footer className="text-center text-[11px] text-neutral-400 pt-2 pb-6 safe-bottom">
-        <span>Built by <span className="font-medium text-neutral-600">extrastu</span></span>
+      <footer className="text-center text-[11px] text-neutral-400 pt-1 pb-5 safe-bottom">
+        <button
+          type="button"
+          onClick={() => setShowAbout(true)}
+          className="hover:underline transition-colors"
+        >
+          Built by <span className="font-semibold text-neutral-600">extrastu</span> · 关于
+        </button>
       </footer>
 
       {/* About Modal */}
@@ -188,8 +186,8 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
               <X className="w-4 h-4" />
             </button>
 
-            <div className="w-12 h-12 rounded-2xl bg-[#F4F1FD] text-[#7059E8] mx-auto flex items-center justify-center font-serif font-bold text-xl">
-              💌
+            <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto shadow-sm border border-neutral-200/80 bg-white p-1">
+              <img src={logoImg} alt="Stamp Maker Logo" className="w-full h-full object-cover rounded-xl" />
             </div>
 
             <div>
@@ -201,13 +199,13 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
             </div>
 
             <div className="text-[11px] text-neutral-400 pt-1 border-t border-neutral-100 font-mono">
-              Version 1.0.0 · Built by extrastu
+              Version 1.0.1 · Built by extrastu
             </div>
 
             <button
               type="button"
               onClick={() => setShowAbout(false)}
-              className="w-full py-3 bg-[#7059E8] hover:bg-[#5E47E0] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98] shadow-md shadow-purple-200"
+              className="w-full py-3 bg-[#5B4BD8] hover:bg-[#4E3EC8] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98] shadow-md shadow-purple-200"
             >
               我知道了
             </button>
@@ -218,7 +216,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
       {isProcessing && (
         <div className='fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center'>
           <div className='bg-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3'>
-            <div className='w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin' />
+            <div className='w-4 h-4 border-2 border-[#5B4BD8] border-t-transparent rounded-full animate-spin' />
             <span className='text-xs font-medium text-neutral-800'>正在载入图片...</span>
           </div>
         </div>
