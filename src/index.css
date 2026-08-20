@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  background-color: #F5F1E8;
+  color: #24221F;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Editorial Paper Texture subtle background */
+.paper-texture {
+  background-color: #F5F1E8;
+  background-image: radial-gradient(#DDD4C0 0.75px, transparent 0.75px), radial-gradient(#DDD4C0 0.75px, #F5F1E8 0.75px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+}
+
+/* Custom range sliders */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  background: #EBE5D8;
+  height: 6px;
+  border-radius: 9999px;
+  transition: background-color 0.15s ease;
+}
+
+input[type="range"]:hover::-webkit-slider-runnable-track {
+  background: #DDD4C0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  margin-top: -5px;
+  background-color: #24221F;
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  border: 2px solid #FFFDF8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  transform: scale(1.15);
+  background-color: #141312;
+}
+
+input[type="range"]::-moz-range-track {
+  background: #EBE5D8;
+  height: 6px;
+  border-radius: 9999px;
+}
+
+input[type="range"]::-moz-range-thumb {
+  background-color: #24221F;
+  height: 16px;
+  width: 16px;
+  border-radius: 9999px;
+  border: 2px solid #FFFDF8;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom delicate scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #DDD4C0;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #B5B0A6;
+}
+
+/* Checkerboard pattern for transparency indication */
+.bg-transparency-grid {
+  background-color: #f7f6f4;
+  background-image: linear-gradient(45deg, #ebe7de 25%, transparent 25%),
+    linear-gradient(-45deg, #ebe7de 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ebe7de 75%),
+    linear-gradient(-45deg, transparent 75%, #ebe7de 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
