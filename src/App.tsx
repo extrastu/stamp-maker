@@ -103,7 +103,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className={`min-h-screen transition-colors ${currentStep === 'crop' ? 'bg-[#141418]' : 'bg-[#FAF8F5]'}`}>
+    <div className={`min-h-screen transition-colors ${currentStep === 'crop' ? 'bg-ink' : 'bg-paper'}`}>
       {/* Main View Transition */}
       <main className="w-full">
         {currentStep === 'start' && (

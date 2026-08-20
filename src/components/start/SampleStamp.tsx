@@ -1,6 +1,7 @@
 import React from 'react';
 
 interface SampleStampProps {
+  id?: string;
   title: string;
   imageUrl: string;
   className?: string;
@@ -14,24 +15,30 @@ export const SampleStamp: React.FC<SampleStampProps> = ({
   onClick,
 }) => {
   return (
-    <div
+    <button
+      type="button"
       onClick={onClick}
-      className={`group relative cursor-pointer select-none transition-all duration-200 hover:scale-[1.03] active:scale-[0.98] ${className}`}
+      className={`group relative text-left select-none overflow-hidden rounded-2xl bg-card p-2 border-2 border-ink shadow-neo btn-neo hover:-translate-y-0.5 hover:shadow-neo-lg transition-all focus:outline-none ${className}`}
     >
-      {/* Real Stamp Card with caption */}
-      <div className="relative p-1.5 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.06)] border border-neutral-200/60 rounded-[3px]">
-        <div className="w-full aspect-[3/4] overflow-hidden relative bg-neutral-100 rounded-[1px]">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
-          />
-        </div>
-        <div className="mt-1 text-[10px] text-neutral-500 font-medium truncate text-center">
-          {title}
-        </div>
+      {/* Image thumbnail container */}
+      <div className="w-full aspect-[3/4] overflow-hidden rounded-xl bg-sand relative border border-ink/20">
+        <img
+          src={imageUrl}
+          alt={title}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
       </div>
-    </div>
+
+      {/* Card Info */}
+      <div className="pt-2 px-0.5 flex items-center justify-between">
+        <span className="text-[12px] font-bold text-ink truncate font-sans">
+          {title}
+        </span>
+        <span className="text-[10px] font-bold text-accent shrink-0">
+          ✨
+        </span>
+      </div>
+    </button>
   );
 };

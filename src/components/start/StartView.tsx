@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Image as ImageIcon, Camera, X } from "lucide-react";
+import { Image as ImageIcon, Camera, X, ArrowRight, Sparkles } from "lucide-react";
 import { SampleStamp } from "./SampleStamp";
 import { OFFLINE_SAMPLES } from "../../utils/sampleImages";
 import logoImg from "../../assets/logo.png";
@@ -80,7 +80,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
   };
 
   return (
-    <div className='min-h-screen bg-[#FAF7F2] flex flex-col justify-between py-5 px-4 sm:px-6 max-w-md mx-auto relative select-none safe-top'>
+    <div className='min-h-screen bg-paper flex flex-col justify-between py-5 px-4 sm:px-6 max-w-md mx-auto relative select-none safe-top'>
       {/* Hidden File Inputs */}
       <input
         type='file'
@@ -98,51 +98,78 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
         className='hidden'
       />
 
-      {/* Top Header with New Logo */}
-      <div className='relative flex flex-col items-center justify-center pt-1 pb-4 text-center'>
-        <div className="w-14 h-14 mb-2 rounded-2xl overflow-hidden shadow-xs border border-neutral-200/80 bg-white p-0.5">
-          <img src={logoImg} alt="Stamp Maker Logo" className="w-full h-full object-cover rounded-[14px]" />
+      {/* Top Hero Section (Codex-Resets Sticker Neo-Brutalism) */}
+      <div className='relative flex flex-col items-center justify-center pt-2 pb-5 text-center'>
+        {/* Kicker Chip Badge */}
+        {/*<div className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-sun border-2 border-ink shadow-neo-sm text-[11px] font-mono font-bold text-ink mb-3 rotate-[-1deg]'>
+          <Sparkles className='size-3 text-accent' />
+          <span>VINTAGE STAMP STUDIO</span>
+          <span className='bg-ink text-white text-[9px] px-1.5 py-0.2 rounded-full'>v1.0.1</span>
+        </div>*/}
+
+        {/* Logo Sticker with physical tilt */}
+        <div className='w-16 h-16 mb-2.5 rounded-2xl overflow-hidden shadow-neo border-2 border-ink bg-card p-1 rotate-[1.5deg] hover:rotate-0 transition-transform duration-200'>
+          <img src={logoImg} alt='Stamp Maker Logo' className='w-full h-full object-cover rounded-xl' />
         </div>
-        <h1 className='text-xl font-bold text-neutral-900 tracking-tight font-serif'>Stamp Maker</h1>
-        <p className='text-xs text-neutral-500 mt-0.5'>把每一张照片，变成你的专属复古邮票</p>
+
+        <h1 className='text-[26px] font-extrabold text-ink tracking-tight leading-tight'>Stamp Maker</h1>
+        <p className='text-xs font-semibold text-ink-2 mt-1'>把日常照片，变成复古物理齿孔小邮票 💌</p>
       </div>
 
-      {/* Main Action Cards */}
+      {/* Main Action Cards (Neo-Brutalist Sticker Cards) */}
       <div className='space-y-3 mb-6'>
-        {/* Upload Card */}
+        {/* Upload Card (Sunny Yellow Accent) */}
         <button
-          type="button"
+          type='button'
           onClick={() => fileInputRef.current?.click()}
-          className='w-full flex items-center gap-4 p-3.5 rounded-2xl bg-[#F0F5FF] hover:bg-[#E8F0FE] border border-blue-100/60 transition-all text-left group shadow-xs active:scale-[0.99]'
+          className='w-full flex items-center justify-between p-4 rounded-2xl bg-card border-2 border-ink shadow-neo btn-neo group text-left hover:bg-sun-tint transition-all'
         >
-          <div className='w-11 h-11 rounded-xl bg-white flex items-center justify-center text-[#2557E0] shadow-xs group-hover:scale-105 transition-transform'>
-            <ImageIcon className='w-5 h-5 stroke-[2]' />
+          <div className='flex items-center gap-3.5'>
+            <div className='w-12 h-12 rounded-xl bg-sun border-2 border-ink shadow-neo-sm flex items-center justify-center text-ink group-hover:scale-105 transition-transform'>
+              <ImageIcon className='w-6 h-6 stroke-[2.2]' />
+            </div>
+            <div>
+              <div className='font-extrabold text-ink text-base leading-tight'>从相册上传</div>
+              <div className='text-xs font-medium text-ink-2 mt-0.5'>选取手机里的相片</div>
+            </div>
           </div>
-          <div>
-            <div className='font-bold text-neutral-900 text-sm leading-tight'>上传图片</div>
-            <div className='text-xs text-neutral-500 mt-0.5 font-normal'>从相册选择</div>
+          <div className='w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center shadow-neo-sm group-hover:translate-x-0.5 transition-transform'>
+            <ArrowRight className='size-4 stroke-[2.5]' />
           </div>
         </button>
 
-        {/* Camera Card */}
+        {/* Camera Card (Mint Accent) */}
         <button
-          type="button"
+          type='button'
           onClick={() => cameraInputRef.current?.click()}
-          className='w-full flex items-center gap-4 p-3.5 rounded-2xl bg-[#F0F9F2] hover:bg-[#E6F4EA] border border-emerald-100/60 transition-all text-left group shadow-xs active:scale-[0.99]'
+          className='w-full flex items-center justify-between p-4 rounded-2xl bg-card border-2 border-ink shadow-neo btn-neo group text-left hover:bg-mint-tint transition-all'
         >
-          <div className='w-11 h-11 rounded-xl bg-white flex items-center justify-center text-[#138A3A] shadow-xs group-hover:scale-105 transition-transform'>
-            <Camera className='w-5 h-5 stroke-[2]' />
+          <div className='flex items-center gap-3.5'>
+            <div className='w-12 h-12 rounded-xl bg-mint border-2 border-ink shadow-neo-sm flex items-center justify-center text-ink group-hover:scale-105 transition-transform'>
+              <Camera className='w-6 h-6 stroke-[2.2]' />
+            </div>
+            <div>
+              <div className='font-extrabold text-ink text-base leading-tight'>即时拍摄</div>
+              <div className='text-xs font-medium text-ink-2 mt-0.5'>打开相机现场抓拍</div>
+            </div>
           </div>
-          <div>
-            <div className='font-bold text-neutral-900 text-sm leading-tight'>拍照</div>
-            <div className='text-xs text-neutral-500 mt-0.5 font-normal'>打开相机拍摄</div>
+          <div className='w-8 h-8 rounded-full bg-ink text-white flex items-center justify-center shadow-neo-sm group-hover:translate-x-0.5 transition-transform'>
+            <ArrowRight className='size-4 stroke-[2.5]' />
           </div>
         </button>
       </div>
 
       {/* Sample Gallery Section */}
       <div className='flex-1 mb-5'>
-        <div className='text-xs text-neutral-500 mb-2.5 font-semibold'>示例</div>
+        <div className='flex items-center justify-between mb-3 px-1'>
+          <div className='flex items-center gap-2'>
+            <span className='text-sm'>🎨</span>
+            <h2 className='text-xs font-extrabold text-ink uppercase tracking-wider'>灵感样张</h2>
+          </div>
+          <span className='font-mono text-[10px] font-bold text-ink-2 bg-sand px-2 py-0.5 rounded-md border border-ink/30'>
+            6 SAMPLES
+          </span>
+        </div>
         <div className='grid grid-cols-3 gap-2.5'>
           {OFFLINE_SAMPLES.map((sample) => (
             <SampleStamp
@@ -156,68 +183,71 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
       </div>
 
       {/* Bottom Footer */}
-      <footer className="text-center text-[11px] text-neutral-400 pt-1 pb-5 safe-bottom">
+      <footer className='text-center text-[11px] text-ink-2 pt-1 pb-5 safe-bottom font-mono'>
         <button
-          type="button"
+          type='button'
           onClick={() => setShowAbout(true)}
-          className="hover:underline transition-colors"
+          className='inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-card border-2 border-ink shadow-neo-sm btn-neo font-bold text-ink hover:bg-sun transition-colors'
         >
-          Built by <span className="font-semibold text-neutral-600">extrastu</span> · 关于
+          <span>Crafted by</span>
+          <span className='text-accent underline decoration-2'>extrastu</span>
+          <span>· 关于</span>
         </button>
       </footer>
 
-      {/* About Modal */}
+      {/* About Modal (Neo-Brutalism Sticker Dialog) */}
       {showAbout && (
         <div
           onClick={() => setShowAbout(false)}
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          className='fixed inset-0 z-50 bg-ink/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150'
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-2xl relative border border-neutral-100 animate-in zoom-in-95 duration-200"
+            className='bg-paper rounded-3xl p-6 max-w-xs w-full text-center space-y-4 shadow-neo-xl relative border-2 border-ink animate-in zoom-in-95 duration-150'
           >
             {/* Close Button X */}
             <button
-              type="button"
+              type='button'
               onClick={() => setShowAbout(false)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700 p-1.5 rounded-full hover:bg-neutral-100 transition-colors"
-              aria-label="关闭"
+              className='absolute top-3.5 right-3.5 w-8 h-8 rounded-full bg-card border-2 border-ink shadow-neo-sm btn-neo flex items-center justify-center text-ink hover:bg-rose transition-colors'
+              aria-label='关闭'
             >
-              <X className="w-4 h-4" />
+              <X className='w-4 h-4 stroke-[2.5]' />
             </button>
 
-            <div className="w-16 h-16 rounded-2xl overflow-hidden mx-auto shadow-sm border border-neutral-200/80 bg-white p-1">
-              <img src={logoImg} alt="Stamp Maker Logo" className="w-full h-full object-cover rounded-xl" />
+            <div className='w-16 h-16 rounded-2xl overflow-hidden mx-auto shadow-neo border-2 border-ink bg-card p-1 rotate-[2deg]'>
+              <img src={logoImg} alt='Stamp Maker Logo' className='w-full h-full object-cover rounded-xl' />
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-neutral-900 font-serif">Stamp Maker</h3>
-              <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
-                把日常照片一键转换为真实齿孔邮票。<br />
-                100% 浏览器纯本地处理，保障隐私安全。
+              <h3 className='text-lg font-extrabold text-ink'>Stamp Maker</h3>
+              <p className='text-xs font-semibold text-ink-2 mt-1.5 leading-relaxed'>
+                把日常照片一键转换为真实齿孔邮票。
+                <br />
+                100% 本地纯离线渲染，安全保密。
               </p>
             </div>
 
-            <div className="text-[11px] text-neutral-400 pt-1 border-t border-neutral-100 font-mono">
-              Version 1.0.1 · Built by extrastu
+            <div className='text-[10px] text-ink-3 pt-1 border-t-2 border-dashed border-ink/30 font-mono font-bold'>
+              v1.0.1 · Built for Xiaohongshu
             </div>
 
             <button
-              type="button"
+              type='button'
               onClick={() => setShowAbout(false)}
-              className="w-full py-3 bg-[#5B4BD8] hover:bg-[#4E3EC8] text-white rounded-xl text-xs font-semibold transition-all active:scale-[0.98] shadow-md shadow-purple-200"
+              className='w-full py-2.5 bg-accent hover:bg-accent-hover text-white rounded-xl text-xs font-extrabold border-2 border-ink shadow-neo btn-neo transition-all'
             >
-              我知道了
+              我知道了 🙏
             </button>
           </div>
         </div>
       )}
 
       {isProcessing && (
-        <div className='fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center'>
-          <div className='bg-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3'>
-            <div className='w-4 h-4 border-2 border-[#5B4BD8] border-t-transparent rounded-full animate-spin' />
-            <span className='text-xs font-medium text-neutral-800'>正在载入图片...</span>
+        <div className='fixed inset-0 bg-ink/50 backdrop-blur-xs z-50 flex items-center justify-center'>
+          <div className='bg-card px-5 py-3.5 rounded-2xl shadow-neo border-2 border-ink flex items-center gap-3'>
+            <div className='w-4 h-4 border-2 border-accent border-t-transparent rounded-full animate-spin' />
+            <span className='text-xs font-bold text-ink'>正在载入图片...</span>
           </div>
         </div>
       )}

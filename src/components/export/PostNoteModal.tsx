@@ -44,7 +44,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
           options,
           1080,
           !includeBackdrop,
-          '#FAF8F5'
+          '#FFF4DD'
         );
         setPreviewUrl(res.dataUrl);
       } catch (e) {
@@ -70,7 +70,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
         format: 'png',
         resolution: 2160,
         transparent: !includeBackdrop,
-        paperColor: '#FAF8F5',
+        paperColor: '#FFF4DD',
       };
 
       if (isXhsMiniTool()) {
@@ -104,28 +104,30 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 select-none"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-ink/60 backdrop-blur-xs animate-in fade-in duration-150 select-none"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-2xl border border-neutral-100 overflow-hidden flex flex-col max-h-[92vh] animate-in slide-in-from-bottom-4 duration-200"
+        className="bg-paper w-full max-w-md rounded-t-3xl sm:rounded-3xl shadow-neo-xl border-2 border-ink overflow-hidden flex flex-col max-h-[92vh] animate-in slide-in-from-bottom-4 duration-150"
       >
         {/* Header */}
-        <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between bg-[#FAF8F5]">
+        <div className="px-5 py-4 border-b-2 border-ink flex items-center justify-between bg-card">
           <div className="flex items-center gap-2">
-            <span className="text-lg">📕</span>
+            <div className="flex size-8 items-center justify-center rounded-xl bg-rose border-2 border-ink shadow-neo-sm text-sm">
+              📕
+            </div>
             <div>
-              <h3 className="font-bold text-base text-neutral-900 leading-tight">创建小红书图文笔记</h3>
-              <p className="text-[11px] text-neutral-400 mt-0.5">直接将邮票带入小红书发布页面</p>
+              <h3 className="font-extrabold text-[15px] text-ink leading-tight">创建小红书图文</h3>
+              <p className="text-[11px] text-ink-2 mt-0.5 font-medium">将邮票一键带入小红书发布页</p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 text-neutral-400 hover:text-neutral-700 rounded-full hover:bg-neutral-200/60 transition-colors"
+            className="flex size-8 items-center justify-center rounded-full bg-paper border-2 border-ink shadow-neo-sm btn-neo text-ink hover:bg-rose transition-colors"
             aria-label="关闭"
           >
-            <X className="w-5 h-5" />
+            <X className="size-4 stroke-[2.5]" />
           </button>
         </div>
 
@@ -133,42 +135,42 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
         <div className="p-5 space-y-4 overflow-y-auto">
           {/* Note Photo Preview */}
           <div>
-            <div className="text-xs font-medium text-neutral-600 mb-2 flex items-center justify-between">
-              <span>笔记配图预览</span>
+            <div className="text-xs font-extrabold text-ink mb-2 flex items-center justify-between px-0.5">
+              <span>封面配图预览</span>
               <button
                 type="button"
                 onClick={() => setIncludeBackdrop(!includeBackdrop)}
-                className="text-[11px] text-[#7059E8] hover:underline flex items-center gap-1"
+                className="text-[11px] text-accent hover:underline font-extrabold"
               >
-                <span>{includeBackdrop ? '切换为透明底' : '切换为衬纸底'}</span>
+                {includeBackdrop ? '切换为透明底' : '切换为衬纸底'}
               </button>
             </div>
-            <div className="w-full h-44 rounded-2xl bg-[#FAF8F5] border border-neutral-200/80 flex items-center justify-center p-3 relative overflow-hidden">
+            <div className="w-full h-40 rounded-2xl bg-card border-2 border-ink flex items-center justify-center p-3 relative overflow-hidden shadow-neo-sm">
               {previewUrl ? (
                 <img
                   src={previewUrl}
                   alt="Note Stamp"
-                  className="max-h-full object-contain drop-shadow-[0_8px_20px_rgba(0,0,0,0.12)]"
+                  className="max-h-full object-contain drop-shadow-[0_8px_18px_rgba(40,30,20,0.15)]"
                 />
               ) : (
-                <div className="w-5 h-5 border-2 border-[#7059E8] border-t-transparent rounded-full animate-spin" />
+                <div className="size-4 border-2 border-accent border-t-transparent rounded-full animate-spin" />
               )}
             </div>
           </div>
 
           {/* Title Input */}
           <div>
-            <div className="flex items-center justify-between text-xs font-medium text-neutral-600 mb-1.5">
+            <div className="flex items-center justify-between text-xs font-extrabold text-ink mb-1.5 px-0.5">
               <span>笔记标题</span>
-              <span className="font-mono text-[10px] text-neutral-400">{title.length}/20</span>
+              <span className="font-mono text-[10.5px] font-bold text-ink-3 tabular-nums">{title.length}/20</span>
             </div>
             <input
               type="text"
               maxLength={20}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="填写吸引人的标题 (最长20字)..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-xs text-neutral-900 focus:outline-none focus:border-[#7059E8] bg-[#F8F7F4] focus:bg-white transition-all font-medium"
+              placeholder="填写吸引人的标题..."
+              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-ink text-xs font-bold text-ink focus:outline-none focus:bg-sun-tint bg-card transition-all"
             />
             {/* Quick Title Chips */}
             <div className="flex items-center gap-1.5 overflow-x-auto pt-2 no-scrollbar">
@@ -177,7 +179,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
                   key={idx}
                   type="button"
                   onClick={() => setTitle(t)}
-                  className="px-2 py-1 bg-[#F4F1FD] hover:bg-[#EBE5FB] text-[#7059E8] rounded-md text-[10px] whitespace-nowrap transition-colors"
+                  className="h-6 rounded-lg bg-card border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[10.5px] font-bold text-ink whitespace-nowrap transition-colors"
                 >
                   {t}
                 </button>
@@ -187,31 +189,31 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
 
           {/* Content Input */}
           <div>
-            <div className="flex items-center justify-between text-xs font-medium text-neutral-600 mb-1.5">
-              <span>笔记正文</span>
-              <span className="font-mono text-[10px] text-neutral-400">{content.length}/1000</span>
+            <div className="flex items-center justify-between text-xs font-extrabold text-ink mb-1.5 px-0.5">
+              <span>正文与标签</span>
+              <span className="font-mono text-[10.5px] font-bold text-ink-3 tabular-nums">{content.length}/1000</span>
             </div>
             <textarea
               rows={4}
               maxLength={1000}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="分享这张邮票背后的故事或拍摄心得..."
-              className="w-full px-3.5 py-2.5 rounded-xl border border-neutral-200 text-xs text-neutral-900 focus:outline-none focus:border-[#7059E8] bg-[#F8F7F4] focus:bg-white transition-all leading-relaxed resize-none"
+              placeholder="分享这张邮票背后的故事..."
+              className="w-full px-3.5 py-2.5 rounded-xl border-2 border-ink text-xs font-medium text-ink focus:outline-none focus:bg-sun-tint bg-card transition-all leading-relaxed resize-none"
             />
           </div>
         </div>
 
         {/* Footer Actions */}
-        <div className="p-5 pt-3 border-t border-neutral-100 bg-[#FAF8F5] safe-bottom">
+        <div className="p-5 pt-3 border-t-2 border-ink bg-card safe-bottom">
           <button
             type="button"
             onClick={handlePost}
             disabled={isPosting}
-            className="w-full h-12 rounded-2xl bg-[#E03A3E] hover:bg-[#C92F33] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-red-200 active:scale-[0.98] disabled:opacity-50"
+            className="w-full h-11 rounded-2xl bg-accent hover:bg-accent-hover text-white font-extrabold text-sm flex items-center justify-center gap-2 border-2 border-ink shadow-neo-lg btn-neo transition-all disabled:opacity-50"
           >
-            <Send className="w-4 h-4 stroke-[2.2]" />
-            <span>{isPosting ? '正在拉起小红书发布页...' : '发布到小红书笔记'}</span>
+            <Send className="size-4 stroke-[2.5]" />
+            <span>{isPosting ? '拉起小红书中...' : '发布到小红书笔记 🚀'}</span>
           </button>
         </div>
       </div>

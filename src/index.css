@@ -4,17 +4,30 @@
 
 :root {
   color-scheme: light;
+  --paper: #FFF4DD;
+  --card: #FFFDF7;
+  --ink: #26201A;
+  --ink-2: #5C5347;
+  --ink-3: #877B6B;
+  --accent: #FF5C2B;
+  --sun: #FFD84D;
+  --rose: #FFB9CC;
+  --sky: #A5DCFF;
+  --mint: #A8F0C6;
+  --sand: #F1E3C4;
 }
 
 html {
   touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--paper);
 }
 
 body {
   margin: 0;
-  background-color: #FAF8F5;
-  color: #1E1E22;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-touch-callout: none;
@@ -30,75 +43,89 @@ body {
   padding-bottom: max(0.75rem, var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px)));
 }
 
-/* Custom modern range sliders */
+/* Neo-brutalist active button depress utility */
+.btn-neo {
+  transition: transform 0.12s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.12s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-neo:active {
+  transform: translate(2px, 2px) !important;
+  box-shadow: 0px 0px 0 #26201A !important;
+}
+
+/* Neo-brutalist Range Slider */
 input[type="range"] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
   cursor: pointer;
   width: 100%;
+  height: 28px;
 }
 
 input[type="range"]::-webkit-slider-runnable-track {
-  background: #2D2D38;
-  height: 6px;
+  background: var(--sand);
+  height: 10px;
   border-radius: 9999px;
+  border: 2px solid var(--ink);
 }
 
 input[type="range"]::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  margin-top: -6px;
-  background-color: #FFFFFF;
-  height: 18px;
-  width: 18px;
+  margin-top: -7px;
+  background-color: var(--sun);
+  height: 22px;
+  width: 22px;
   border-radius: 9999px;
-  border: 2px solid #7059E8;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  transition: transform 0.15s ease;
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform 0.1s ease;
 }
 
 input[type="range"]:active::-webkit-slider-thumb {
   transform: scale(1.15);
+  box-shadow: 1px 1px 0 var(--ink);
+  background-color: var(--accent);
 }
 
 input[type="range"]::-moz-range-track {
-  background: #2D2D38;
-  height: 6px;
+  background: var(--sand);
+  height: 10px;
   border-radius: 9999px;
+  border: 2px solid var(--ink);
 }
 
 input[type="range"]::-moz-range-thumb {
-  background-color: #FFFFFF;
-  height: 18px;
-  width: 18px;
+  background-color: var(--sun);
+  height: 22px;
+  width: 22px;
   border-radius: 9999px;
-  border: 2px solid #7059E8;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
 }
 
-/* Custom delicate scrollbars */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+/* Custom Selection Highlight */
+::selection {
+  background: var(--sun);
+  color: var(--ink);
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #DDD8CE;
-  border-radius: 9999px;
-}
-
-/* Checkerboard pattern for transparency indication */
+/* Transparency Grid Pattern */
 .bg-transparency-grid {
-  background-color: #f7f6f4;
-  background-image: linear-gradient(45deg, #ebe7de 25%, transparent 25%),
-    linear-gradient(-45deg, #ebe7de 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #ebe7de 75%),
-    linear-gradient(-45deg, transparent 75%, #ebe7de 75%);
-  background-size: 16px 16px;
-  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  background-color: #FFFDF7;
+  background-image: linear-gradient(45deg, #F1E3C4 25%, transparent 25%),
+    linear-gradient(-45deg, #F1E3C4 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #F1E3C4 75%),
+    linear-gradient(-45deg, transparent 75%, #F1E3C4 75%);
+  background-size: 14px 14px;
+  background-position: 0 0, 0 7px, 7px -7px, -7px 0px;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

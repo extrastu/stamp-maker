@@ -58,31 +58,31 @@ export const CropView: React.FC<CropViewProps> = ({
   };
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#0C0C0E] text-white flex flex-col justify-between max-w-md mx-auto relative select-none">
-      {/* Top Controls Row (Physically below native nav bar) */}
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-ink text-white flex flex-col justify-between max-w-md mx-auto relative select-none">
+      {/* Top Controls Row (Positioned below native nav bar) */}
       <div className="shrink-0 px-4 pb-2 z-20 flex items-center justify-between safe-top">
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/10 px-3 text-[12px] font-medium text-white shadow-btn backdrop-blur-md hover:bg-white/15 active:scale-[0.97] transition-all"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-card text-ink border-2 border-ink shadow-neo-sm btn-neo px-3 text-xs font-extrabold transition-all"
         >
-          <ArrowLeft className="size-3.5" />
+          <ArrowLeft className="size-3.5 stroke-[2.5]" />
           <span>重选图片</span>
         </button>
 
         <button
           type="button"
           onClick={handleRotate}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white/10 px-3 text-[12px] font-medium text-white shadow-btn backdrop-blur-md hover:bg-white/15 active:scale-[0.97] transition-all"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-sun text-ink border-2 border-ink shadow-neo-sm btn-neo px-3 text-xs font-mono font-bold transition-all"
           title="旋转 90 度"
         >
-          <RotateCw className="size-3.5" />
-          <span className="font-mono text-[11px] tabular-nums">{rotation}°</span>
+          <RotateCw className="size-3.5 stroke-[2.5]" />
+          <span className="tabular-nums">{rotation}°</span>
         </button>
       </div>
 
-      {/* Main Cropper Stage (Flexibly scales to remaining space) */}
-      <div className="relative flex-1 min-h-0 w-full bg-[#08080A] overflow-hidden flex items-center justify-center">
+      {/* Main Cropper Stage */}
+      <div className="relative flex-1 min-h-0 w-full bg-[#1A1410] overflow-hidden flex items-center justify-center border-y-2 border-ink/40">
         <Cropper
           image={imageUrl}
           crop={crop}
@@ -96,41 +96,43 @@ export const CropView: React.FC<CropViewProps> = ({
           showGrid={true}
           classes={{
             containerClassName: 'relative w-full h-full',
-            cropAreaClassName: '!border-white/90 !border-[1.5px] !rounded-none shadow-[0_0_0_9999px_rgba(0,0,0,0.75)]',
+            cropAreaClassName: '!border-sun !border-2 !rounded-none shadow-[0_0_0_9999px_rgba(38,32,26,0.85)]',
           }}
         />
 
         {/* Center Tip */}
-        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none inline-flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1 text-[11px] font-medium text-neutral-300 shadow-hairline backdrop-blur-md">
-          <span>拖动构图 · 双指缩放</span>
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none inline-flex items-center gap-1 px-3 py-1 rounded-full bg-card border-2 border-ink shadow-neo-sm text-[11px] font-bold text-ink">
+          <span>拖动画面 · 双指缩放</span>
         </div>
       </div>
 
-      {/* Bottom Control Sheet */}
-      <div className="shrink-0 bg-[#141418] border-t border-white/10 p-4 space-y-3.5 safe-bottom">
+      {/* Bottom Control Sheet (Warm Paper Neo-Brutalist Panel) */}
+      <div className="shrink-0 bg-paper border-t-2 border-ink p-4 space-y-3.5 safe-bottom">
         {/* Ratio Selector */}
         <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-[12px] text-neutral-400 font-medium px-1">
+          <div className="flex items-center justify-between text-xs font-extrabold text-ink px-0.5">
             <span>画幅比例</span>
-            <span className="font-mono text-[11px] text-neutral-500">{activeRatioObj.label}</span>
+            <span className="font-mono text-[11px] bg-sand px-2 py-0.5 rounded-md border border-ink/30 text-ink-2">
+              {activeRatioObj.label}
+            </span>
           </div>
           <RatioSelector
             selectedRatio={selectedRatio}
             onSelectRatio={(r) => setSelectedRatio(r)}
-            theme="dark"
+            theme="light"
           />
         </div>
 
-        {/* Primary Action Button */}
+        {/* Primary Action Button (Tangerine Accent) */}
         <div className="pt-0.5">
           <button
             type="button"
             onClick={handleNext}
             disabled={isProcessing}
-            className="w-full h-11 rounded-full bg-white text-[#111113] font-medium text-[13px] flex items-center justify-center gap-1.5 shadow-btn hover:bg-neutral-100 active:scale-[0.97] transition-all disabled:opacity-50"
+            className="w-full h-11 rounded-2xl bg-accent hover:bg-accent-hover text-white font-extrabold text-sm flex items-center justify-center gap-2 border-2 border-ink shadow-neo-lg btn-neo transition-all disabled:opacity-50"
           >
-            <span>{isProcessing ? '处理中...' : '下一步：定制齿孔'}</span>
-            <ArrowRight className="size-4" />
+            <span>{isProcessing ? '处理中...' : '下一步：定制齿孔 💌'}</span>
+            <ArrowRight className="size-4 stroke-[2.5]" />
           </button>
         </div>
       </div>

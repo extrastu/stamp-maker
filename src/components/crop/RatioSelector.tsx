@@ -11,7 +11,10 @@ interface RatioSelectorProps {
 export const RatioSelector: React.FC<RatioSelectorProps> = ({
   selectedRatio,
   onSelectRatio,
+  theme = 'light',
 }) => {
+  const isDark = theme === 'dark';
+
   return (
     <div className="grid grid-cols-5 gap-2 w-full">
       {RATIOS.map((ratio) => {
@@ -21,10 +24,14 @@ export const RatioSelector: React.FC<RatioSelectorProps> = ({
             key={ratio.id}
             type="button"
             onClick={() => onSelectRatio(ratio.id)}
-            className={`py-2.5 px-1 rounded-xl text-xs font-bold transition-all text-center select-none ${
+            className={`py-2 px-1 rounded-xl text-xs font-mono font-bold transition-all text-center select-none btn-neo ${
               isSelected
-                ? 'bg-[#5B4BD8] text-white shadow-md shadow-purple-900/40 ring-1 ring-white/30 scale-[1.02]'
-                : 'bg-[#24242C] text-neutral-200 hover:text-white hover:bg-[#32323D] border border-white/10'
+                ? isDark
+                  ? 'bg-accent text-white border-2 border-white shadow-neo-white'
+                  : 'bg-accent text-white border-2 border-ink shadow-neo'
+                : isDark
+                ? 'bg-[#1E1915] text-neutral-300 border-2 border-white/20 hover:border-white/60'
+                : 'bg-card text-ink border-2 border-ink/40 hover:border-ink hover:bg-sand'
             }`}
           >
             {ratio.id}

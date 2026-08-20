@@ -97,30 +97,30 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const sliderPercentage = Math.max(0, Math.min(100, ((options.margin - minMargin) / (maxMargin - minMargin)) * 100));
 
   return (
-    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-[#FAF7F2] text-ink flex flex-col justify-between max-w-md mx-auto relative select-none">
-      {/* 1. Top Navigation Row */}
+    <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-paper text-ink flex flex-col justify-between max-w-md mx-auto relative select-none">
+      {/* 1. Top Navigation Row (Neo-Brutalist Pills) */}
       <div className="shrink-0 px-4 pt-2 pb-1 flex items-center justify-between z-10 safe-top">
         <button
           type="button"
           onClick={onBackToCrop}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-[12px] font-bold text-neutral-900 shadow-sm border border-neutral-200 hover:bg-neutral-50 active:scale-[0.97] transition-all"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-3 text-xs font-extrabold text-ink transition-all"
         >
-          <ArrowLeft className="size-3.5 stroke-[2.2]" />
+          <ArrowLeft className="size-3.5 stroke-[2.5]" />
           <span>重新构图</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-full bg-white px-3 text-[12px] font-bold text-neutral-900 shadow-sm border border-neutral-200 hover:bg-neutral-50 active:scale-[0.97] transition-all"
+          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-sun border-2 border-ink shadow-neo-sm btn-neo px-3 text-xs font-extrabold text-ink transition-all"
           title="导出参数"
         >
-          <SlidersHorizontal className="size-3.5 stroke-[2.2]" />
+          <SlidersHorizontal className="size-3.5 stroke-[2.5]" />
           <span>导出参数</span>
         </button>
       </div>
 
-      {/* 2. Main Stamp Live Preview Stage (Flexes to available space) */}
+      {/* 2. Main Stamp Live Preview Stage */}
       <div className="flex-1 min-h-0 flex items-center justify-center px-4 py-2 overflow-hidden">
         <StampPreview
           croppedImageUrl={croppedImageUrl}
@@ -128,13 +128,13 @@ export const EditorView: React.FC<EditorViewProps> = ({
         />
       </div>
 
-      {/* 3. Customization Control Panel */}
-      <div className="shrink-0 p-4 bg-white rounded-t-3xl shadow-float border-t border-[#ECE7DE] space-y-3.5 safe-bottom">
-        {/* Style Selector (Segmented Tabs) */}
+      {/* 3. Customization Control Panel (Neo-Brutalist Sticker Card) */}
+      <div className="shrink-0 p-4 bg-card rounded-t-3xl border-t-2 border-ink shadow-neo-xl space-y-3.5 safe-bottom">
+        {/* Style Selector */}
         <div>
-          <div className="flex items-center justify-between text-xs text-neutral-900 font-bold mb-1.5 px-0.5">
+          <div className="flex items-center justify-between text-xs font-extrabold text-ink mb-1.5 px-0.5">
             <span>齿孔样式</span>
-            <span className="font-mono text-[11px] text-neutral-500">
+            <span className="font-mono text-[11px] font-bold text-ink-2 bg-sand px-2 py-0.5 rounded-md border border-ink/30">
               {options.style === 'classic' ? '标准齿' : options.style === 'fine' ? '密齿' : '大齿'}
             </span>
           </div>
@@ -150,10 +150,10 @@ export const EditorView: React.FC<EditorViewProps> = ({
                   key={style.id}
                   type="button"
                   onClick={() => handleSelectStyle(style.id)}
-                  className={`h-8 rounded-xl text-xs font-bold transition-all text-center select-none flex items-center justify-center ${
+                  className={`h-9 rounded-xl text-xs font-extrabold transition-all text-center select-none flex items-center justify-center border-2 border-ink btn-neo ${
                     isSelected
-                      ? 'bg-[#F4F1FD] border-2 border-[#5B4BD8] text-[#5B4BD8] shadow-xs'
-                      : 'bg-[#F8F6F2] border border-neutral-200 text-neutral-900 hover:bg-[#F2ECE2]'
+                      ? 'bg-sun text-ink shadow-neo'
+                      : 'bg-paper text-ink shadow-none hover:bg-sand opacity-90'
                   }`}
                 >
                   {style.name}
@@ -165,9 +165,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
         {/* Margin Slider */}
         <div>
-          <div className="flex items-center justify-between text-xs text-neutral-900 font-bold mb-1 px-0.5">
+          <div className="flex items-center justify-between text-xs font-extrabold text-ink mb-1 px-0.5">
             <span>留白边距</span>
-            <span className="font-mono text-[11px] text-[#5B4BD8] font-bold bg-[#F4F1FD] px-2 py-0.5 rounded-md border border-[#5B4BD8]/20">
+            <span className="font-mono text-[11px] font-bold text-ink bg-sun px-2 py-0.5 rounded-md border-2 border-ink shadow-neo-sm">
               {options.margin}px
             </span>
           </div>
@@ -178,7 +178,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             value={options.margin}
             onChange={(e) => handleMarginChange(Number(e.target.value))}
             style={{
-              background: `linear-gradient(to right, #5B4BD8 ${sliderPercentage}%, #ECE7DE ${sliderPercentage}%)`,
+              background: `linear-gradient(to right, #FF5C2B ${sliderPercentage}%, #F1E3C4 ${sliderPercentage}%)`,
             }}
             aria-label="调整留白边距"
           />
@@ -186,7 +186,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
         {/* Background Color Selector */}
         <div>
-          <div className="text-xs text-neutral-900 font-bold mb-1.5 px-0.5">衬纸底色</div>
+          <div className="text-xs font-extrabold text-ink mb-1.5 px-0.5">衬纸底色</div>
           <div className="flex items-center justify-between gap-2 px-1">
             {COLOR_PRESETS.map((color) => {
               const isSelected = options.backgroundColor.toLowerCase() === color.hex.toLowerCase();
@@ -196,10 +196,10 @@ export const EditorView: React.FC<EditorViewProps> = ({
                   type="button"
                   onClick={() => handleSelectColor(color.hex)}
                   style={{ backgroundColor: color.hex }}
-                  className={`size-7 rounded-full border transition-all duration-150 relative ${
+                  className={`size-7 rounded-full border-2 border-ink transition-all relative ${
                     isSelected
-                      ? 'ring-2 ring-[#5B4BD8] ring-offset-2 scale-110 border-neutral-400 shadow-sm'
-                      : 'border-neutral-300 hover:scale-105 shadow-xs'
+                      ? 'ring-2 ring-ink ring-offset-2 scale-110 shadow-neo-sm'
+                      : 'hover:scale-105 opacity-90'
                   }`}
                   aria-label={color.name}
                 />
@@ -208,17 +208,17 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Action Buttons Toolbar */}
         <div className="pt-1 space-y-2">
-          {/* Main Primary CTA Button */}
+          {/* Main Primary CTA Button (Tangerine Accent #FF5C2B) */}
           <button
             type="button"
             onClick={handleSaveDirectly}
             disabled={isSaving}
-            className="w-full h-11 rounded-2xl bg-[#5B4BD8] hover:bg-[#4E3EC8] text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-purple-900/20 active:scale-[0.98] transition-all disabled:opacity-50"
+            className="w-full h-11 rounded-2xl bg-accent hover:bg-accent-hover text-white font-extrabold text-sm flex items-center justify-center gap-2 border-2 border-ink shadow-neo-lg btn-neo transition-all disabled:opacity-50"
           >
-            <Download className="size-4 stroke-[2.4]" />
-            <span>{isSaving ? '生成中...' : isXhs ? '保存邮票到手机相册' : '保存高清邮票图片'}</span>
+            <Download className="size-4 stroke-[2.5]" />
+            <span>{isSaving ? '生成中...' : isXhs ? '保存邮票到手机相册 📬' : '保存高清邮票图片 📬'}</span>
           </button>
 
           {/* Secondary Action Row */}
@@ -226,7 +226,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             <button
               type="button"
               onClick={() => setIsPostNoteModalOpen(true)}
-              className="h-9 rounded-xl bg-white border border-neutral-300 hover:bg-[#FAF7F2] text-neutral-900 font-bold text-xs flex items-center justify-center gap-1 shadow-xs active:scale-[0.98] transition-all"
+              className="h-9 rounded-xl bg-rose border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-xs flex items-center justify-center gap-1 transition-all"
             >
               <span>📕</span>
               <span>发布小红书图文</span>
@@ -236,9 +236,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
               type="button"
               onClick={handleCopyClipboard}
               disabled={isQuickCopying}
-              className="h-9 rounded-xl bg-white border border-neutral-300 hover:bg-[#FAF7F2] text-neutral-900 font-bold text-xs flex items-center justify-center gap-1 shadow-xs active:scale-[0.98] transition-all disabled:opacity-50"
+              className="h-9 rounded-xl bg-sky border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-xs flex items-center justify-center gap-1 transition-all disabled:opacity-50"
             >
-              <Copy className="size-3.5 text-[#5B4BD8] stroke-[2.2]" />
+              <Copy className="size-3.5 stroke-[2.5] text-ink" />
               <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
             </button>
           </div>
