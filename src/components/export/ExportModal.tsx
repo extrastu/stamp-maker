@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Download, Copy, X, Check } from 'lucide-react';
+import { Download, Copy, X, Check, Share2 } from 'lucide-react';
 import { StampOptions, ExportSettings } from '../../types';
-import { downloadStamp, copyStampToClipboard } from '../../utils/exportStamp';
+import { downloadStamp, copyStampToClipboard, postStampToXhsNote, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -28,26 +28,46 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   });
 
   const [isExporting, setIsExporting] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const isXhs = isXhsMiniTool();
 
   if (!isOpen) return null;
 
   const handleDownload = async () => {
     try {
       setIsExporting(true);
-      await downloadStamp(
+      const res = await downloadStamp(
         croppedImageUrl,
         options,
         settings,
         originalFileName
       );
-      onToast('success', '高清邮票已成功导出下载！');
-      onClose();
+      onToast(res.success ? 'success' : 'error', res.message);
+      if (res.success) onClose();
     } catch (err) {
       console.error('Download error', err);
       onToast('error', '导出失败，请重试');
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  const handlePostNote = async () => {
+    try {
+      setIsPosting(true);
+      const res = await postStampToXhsNote(
+        croppedImageUrl,
+        options,
+        settings
+      );
+      onToast(res.success ? 'success' : 'error', res.message);
+      if (res.success) onClose();
+    } catch (err) {
+      console.error('Post note error', err);
+      onToast('error', '发布笔记失败');
+    } finally {
+      setIsPosting(false);
     }
   };
 
@@ -103,7 +123,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div className="grid grid-cols-3 gap-2.5">
               {[
                 { res: 1080 as const, label: '标准 1080p', desc: '社交快速分享' },
-                { res: 2160 as const, label: '超清 2160p (推荐)', desc: '小红书高清首选' },
+                { res: 2160 as const, label: '超清 2160p', desc: '小红书高清推荐' },
                 { res: 3240 as const, label: '极清 3240p', desc: '手账打印/海报' },
               ].map((item) => {
                 const isSelected = settings.resolution === item.res;
@@ -194,22 +214,33 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
         {/* Modal Footer Actions */}
         <div className="px-6 py-4 border-t border-paper-200 bg-paper-50 flex flex-col sm:flex-row items-center gap-3">
-          <button
-            onClick={handleCopy}
-            disabled={isCopying || isExporting}
-            className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-paper-200 text-ink hover:bg-paper-300/80 font-medium text-xs sm:text-sm transition-all border border-paper-300/60 disabled:opacity-50"
-          >
-            <Copy className="w-4 h-4" />
-            <span>{isCopying ? '复制中...' : '复制透明图片 (剪贴板)'}</span>
-          </button>
+          {isXhs ? (
+            <button
+              onClick={handlePostNote}
+              disabled={isPosting || isExporting}
+              className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-medium text-xs sm:text-sm transition-all shadow-sm disabled:opacity-50"
+            >
+              <Share2 className="w-4 h-4" />
+              <span>{isPosting ? '准备发布中...' : '发布到小红书笔记'}</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleCopy}
+              disabled={isCopying || isExporting}
+              className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-paper-200 text-ink hover:bg-paper-300/80 font-medium text-xs sm:text-sm transition-all border border-paper-300/60 disabled:opacity-50"
+            >
+              <Copy className="w-4 h-4" />
+              <span>{isCopying ? '复制中...' : '复制透明图'}</span>
+            </button>
+          )}
 
           <button
             onClick={handleDownload}
-            disabled={isExporting || isCopying}
+            disabled={isExporting || isCopying || isPosting}
             className="w-full sm:w-auto flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-ink text-paper-50 hover:bg-ink-dark font-medium text-xs sm:text-sm transition-all shadow-sm hover:shadow disabled:opacity-50"
           >
             <Download className="w-4 h-4" />
-            <span>{isExporting ? '生成导出中...' : '下载保存图片'}</span>
+            <span>{isExporting ? '处理中...' : isXhs ? '保存到系统相册' : '下载保存图片'}</span>
           </button>
         </div>
       </div>

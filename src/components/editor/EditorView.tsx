@@ -137,7 +137,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
       </div>
 
       {/* Mobile Sticky Bottom Action Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-paper-100/95 backdrop-blur-md border-t border-paper-200 flex items-center gap-2.5 z-20">
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-paper-100/95 backdrop-blur-md border-t border-paper-200 flex items-center gap-2.5 z-20 safe-bottom">
         <button
           onClick={handleQuickCopy}
           disabled={isQuickCopying}

@@ -9,7 +9,7 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ currentStep, onReset }) => {
   return (
-    <header className='w-full border-b border-paper-200 bg-paper-100/90 backdrop-blur-md sticky top-0 z-30 transition-all'>
+    <header className='w-full border-b border-paper-200 bg-paper-100/90 backdrop-blur-md sticky top-0 z-30 transition-all safe-top'>
       <div className='max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between'>
         {/* Brand Logo & Name */}
         <div

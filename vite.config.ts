@@ -1,7 +1,55 @@
-import { defineConfig } from 'vite';
+import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+
+// Custom plugin to convert Vite output to classic script at bottom of body for XHS container
+function classicScriptPlugin(): Plugin {
+  return {
+    name: 'classic-script-plugin',
+    transformIndexHtml(html) {
+      let scriptTag = '';
+      
+      let processed = html
+        // Remove type="module" and crossorigin
+        .replace(/<script type="module"\s*crossorigin\s*src="([^"]+)"><\/script>/g, (_, src) => {
+          scriptTag = `<script src="${src.startsWith('/') ? '.' + src : src}"></script>`;
+          return '';
+        })
+        .replace(/<script type="module"\s*src="([^"]+)"><\/script>/g, (_, src) => {
+          scriptTag = `<script src="${src.startsWith('/') ? '.' + src : src}"></script>`;
+          return '';
+        })
+        // Remove crossorigin and ensure relative paths
+        .replace(/\s*crossorigin/g, '')
+        .replace(/src="\/assets\//g, 'src="./assets/')
+        .replace(/href="\/assets\//g, 'href="./assets/');
+
+      // Put script tag before </body>
+      if (scriptTag) {
+        processed = processed.replace('</body>', `  ${scriptTag}\n  </body>`);
+      }
+
+      return processed;
+    },
+  };
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  base: './',
+  plugins: [react(), classicScriptPlugin()],
+  build: {
+    target: 'es2015',
+    cssCodeSplit: false,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        format: 'iife',
+        name: 'StampMakerApp',
+        entryFileNames: 'assets/app.js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name].[ext]',
+        inlineDynamicImports: true,
+      },
+    },
+  },
 });

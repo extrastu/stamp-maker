@@ -1,41 +1,11 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Upload, Camera, Sparkles, Image as ImageIcon, ShieldCheck } from 'lucide-react';
 import { SampleStamp } from './SampleStamp';
+import { OFFLINE_SAMPLES } from '../../utils/sampleImages';
 
 interface StartViewProps {
   onImageSelected: (file: File, url: string) => void;
 }
-
-const SAMPLE_GALLERY = [
-  {
-    id: 'coffee',
-    title: 'Cafe Kyoto',
-    price: '¥120',
-    rotation: -4,
-    url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    id: 'flower',
-    title: 'Botanical',
-    price: '80¢',
-    rotation: 3,
-    url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    id: 'fuji',
-    title: 'Mt. Fuji',
-    price: '¥200',
-    rotation: -2,
-    url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=600&q=80',
-  },
-  {
-    id: 'street',
-    title: 'City Morning',
-    price: '$1.50',
-    rotation: 5,
-    url: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80',
-  },
-];
 
 export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -99,36 +69,36 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
     }
   };
 
-  const handleSampleClick = async (sampleUrl: string, sampleTitle: string) => {
+  const handleSampleClick = (sampleUrl: string, sampleTitle: string) => {
     try {
       setIsProcessing(true);
-      const response = await fetch(sampleUrl);
-      const blob = await response.blob();
-      const file = new File([blob], `${sampleTitle.toLowerCase().replace(/\s+/g, '-')}.jpg`, {
-        type: 'image/jpeg',
-      });
-      const localUrl = URL.createObjectURL(blob);
-      onImageSelected(file, localUrl);
-    } catch (err) {
-      console.error('Failed to load sample image', err);
-      // Fallback
       const img = new Image();
-      img.crossOrigin = 'anonymous';
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width = img.width || 600;
+        canvas.height = img.height || 800;
         const ctx = canvas.getContext('2d');
-        ctx?.drawImage(img, 0, 0);
-        canvas.toBlob((blob) => {
-          if (blob) {
-            const f = new File([blob], `${sampleTitle}.jpg`, { type: 'image/jpeg' });
-            onImageSelected(f, URL.createObjectURL(blob));
-          }
-        });
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (blob) {
+              const file = new File([blob], `${sampleTitle.toLowerCase().replace(/\s+/g, '-')}.png`, {
+                type: 'image/png',
+              });
+              onImageSelected(file, sampleUrl);
+            }
+            setIsProcessing(false);
+          }, 'image/png');
+        } else {
+          setIsProcessing(false);
+        }
+      };
+      img.onerror = () => {
+        setIsProcessing(false);
       };
       img.src = sampleUrl;
-    } finally {
+    } catch (err) {
+      console.error('Failed to load sample image', err);
       setIsProcessing(false);
     }
   };
@@ -232,7 +202,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-            {SAMPLE_GALLERY.map((sample) => (
+            {OFFLINE_SAMPLES.map((sample) => (
               <SampleStamp
                 key={sample.id}
                 title={sample.title}

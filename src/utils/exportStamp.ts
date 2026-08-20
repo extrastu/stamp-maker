@@ -1,6 +1,14 @@
 import confetti from 'canvas-confetti';
 import { StampOptions, ExportSettings } from '../types';
+import '../types/jsbridge';
 import { renderStamp } from './renderStamp';
+
+/**
+ * Check if running inside XHS MiniTool Container
+ */
+export function isXhsMiniTool(): boolean {
+  return typeof window !== 'undefined' && Boolean(window.xhs?.miniTool);
+}
 
 /**
  * Generate formatted timestamp filename
@@ -29,13 +37,14 @@ export function generateFileName(
 
 /**
  * High-resolution Stamp Exporter
+ * Supports XHS JSBridge saveImageToPhotosAlbum & Web Download Fallback
  */
 export async function downloadStamp(
   imageSource: string | HTMLImageElement,
   options: StampOptions,
   settings: ExportSettings,
   originalName?: string
-): Promise<void> {
+): Promise<{ success: boolean; message: string }> {
   const result = await renderStamp(
     imageSource,
     options,
@@ -44,6 +53,38 @@ export async function downloadStamp(
     settings.paperColor
   );
 
+  const dataUrl = result.dataUrl;
+
+  // 1. If in XHS MiniTool container, use JSBridge save to album
+  if (isXhsMiniTool() && window.xhs?.miniTool) {
+    try {
+      const tempFileRes = await window.xhs.miniTool.writeTempFile({
+        data: dataUrl,
+      });
+
+      await window.xhs.miniTool.saveImageToPhotosAlbum({
+        filePath: tempFileRes.filePath || dataUrl,
+      });
+
+      triggerConfetti();
+      return { success: true, message: '邮票已成功保存到系统相册！' };
+    } catch (err: any) {
+      console.error('JSBridge saveImageToPhotosAlbum error', err);
+      // Try direct dataUrl fallback
+      try {
+        await window.xhs.miniTool.saveImageToPhotosAlbum({
+          filePath: dataUrl,
+        });
+        triggerConfetti();
+        return { success: true, message: '邮票已成功保存到系统相册！' };
+      } catch (directErr) {
+        console.error('Direct JSBridge save failed', directErr);
+        return { success: false, message: '保存相册失败，请检查相册权限' };
+      }
+    }
+  }
+
+  // 2. Web browser fallback download
   const mimeType =
     settings.format === 'jpeg'
       ? 'image/jpeg'
@@ -54,29 +95,71 @@ export async function downloadStamp(
   const ext = settings.format === 'jpeg' ? 'jpg' : settings.format;
   const fileName = generateFileName(originalName, ext);
 
-  // Convert to blob and download
-  result.canvas.toBlob(
-    (blob) => {
-      if (!blob) return;
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+  return new Promise((resolve) => {
+    result.canvas.toBlob(
+      (blob) => {
+        if (!blob) {
+          resolve({ success: false, message: '图片生成失败' });
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
 
-      // Trigger celebratory confetti
-      triggerConfetti();
-    },
-    mimeType,
-    0.95
-  );
+        triggerConfetti();
+        resolve({ success: true, message: '高清邮票已成功导出下载！' });
+      },
+      mimeType,
+      0.95
+    );
+  });
 }
 
 /**
- * Copy transparent PNG stamp directly to user's clipboard
+ * Publish Stamp directly to XHS Note via JSBridge
+ */
+export async function postStampToXhsNote(
+  imageSource: string | HTMLImageElement,
+  options: StampOptions,
+  settings: ExportSettings
+): Promise<{ success: boolean; message: string }> {
+  if (!isXhsMiniTool() || !window.xhs?.miniTool) {
+    return { success: false, message: '当前非小红书容器环境' };
+  }
+
+  try {
+    const result = await renderStamp(
+      imageSource,
+      options,
+      Math.min(settings.resolution, 2160),
+      settings.transparent,
+      settings.paperColor
+    );
+
+    await window.xhs.miniTool.postNote({
+      title: '我的专属复古邮票 💌',
+      content: '用 Stamp Maker 制作的专属邮票，快来试试吧！ #小红书小工具 #手账 #邮票',
+      pageType: 'photo_publish',
+      mediaInfo: {
+        image_resources: [{ url: result.dataUrl }],
+      },
+    });
+
+    triggerConfetti();
+    return { success: true, message: '已跳转发布笔记页面！' };
+  } catch (err: any) {
+    console.error('JSBridge postNote error', err);
+    return { success: false, message: err?.errMsg || '发布笔记失败' };
+  }
+}
+
+/**
+ * Copy transparent PNG stamp to user clipboard (for web environment)
  */
 export async function copyStampToClipboard(
   imageSource: string | HTMLImageElement,
@@ -87,7 +170,7 @@ export async function copyStampToClipboard(
     if (!navigator.clipboard || !window.ClipboardItem) {
       return {
         success: false,
-        message: '当前浏览器不支持直接复制图片到剪贴板，请点击保存下载',
+        message: '当前环境不支持直接复制图片，请点击「保存图片」',
       };
     }
 
@@ -113,12 +196,12 @@ export async function copyStampToClipboard(
             }),
           ]);
           triggerConfetti();
-          resolve({ success: true, message: '邮票已成功复制到剪贴板！可以直接在其他应用中粘贴' });
+          resolve({ success: true, message: '邮票已成功复制到剪贴板！' });
         } catch (err) {
           console.error('Clipboard write error', err);
           resolve({
             success: false,
-            message: '剪贴板权限受限，建议直接点击「保存图片」下载',
+            message: '剪贴板权限受限，请点击「保存图片」',
           });
         }
       }, 'image/png');
@@ -127,7 +210,7 @@ export async function copyStampToClipboard(
     console.error('Copy stamp error', error);
     return {
       success: false,
-      message: '复制失败，请点击「保存图片」进行下载',
+      message: '复制失败，请点击「保存图片」',
     };
   }
 }
