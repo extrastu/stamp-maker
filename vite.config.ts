@@ -1,15 +1,17 @@
 import { defineConfig, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// Custom plugin to convert Vite output to classic script at bottom of body for XHS container
+// Custom plugin to convert Vite build output to classic script for XHS container
+// ONLY applied during 'build', allowing full Vite HMR and dev server functionality during 'serve'
 function classicScriptPlugin(): Plugin {
   return {
     name: 'classic-script-plugin',
+    apply: 'build', // <-- Critical: Only run during production build/packaging
     transformIndexHtml(html) {
       let scriptTag = '';
-      
+
       let processed = html
-        // Remove type="module" and crossorigin
+        // Remove type="module" and crossorigin from built bundle
         .replace(/<script type="module"\s*crossorigin\s*src="([^"]+)"><\/script>/g, (_, src) => {
           scriptTag = `<script src="${src.startsWith('/') ? '.' + src : src}"></script>`;
           return '';

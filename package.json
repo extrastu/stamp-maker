@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "zip": "node scripts/build-zip.js",
+    "build:zip": "node scripts/build-zip.js"
   },
   "dependencies": {
     "canvas-confetti": "^1.9.4",
