@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Upload, Camera, Sparkles, Image as ImageIcon, ShieldCheck } from "lucide-react";
+import { Upload, Camera, Image as ImageIcon, ShieldCheck } from "lucide-react";
 import { SampleStamp } from "./SampleStamp";
 import { OFFLINE_SAMPLES } from "../../utils/sampleImages";
 
