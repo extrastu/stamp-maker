@@ -1,7 +1,8 @@
 import confetti from 'canvas-confetti';
-import { StampOptions, ExportSettings } from '../types';
+import { MakerMode, StampOptions, TicketOptions, ExportSettings } from '../types';
 import '../types/jsbridge';
 import { renderStamp } from './renderStamp';
+import { renderTicket } from './renderTicket';
 
 /**
  * Check if running inside XHS MiniTool Container
@@ -19,12 +20,13 @@ export function isXhsMiniTool(): boolean {
 export function generateFileName(
   originalName?: string,
   extension = 'png',
-  index?: number
+  index?: number,
+  prefix = 'stamp'
 ): string {
   if (originalName) {
     const base = originalName.replace(/\.[^/.]+$/, '').trim();
     if (base) {
-      return index !== undefined ? `${base}-stamp-${index + 1}.${extension}` : `${base}-stamp.${extension}`;
+      return index !== undefined ? `${base}-${prefix}-${index + 1}.${extension}` : `${base}-${prefix}.${extension}`;
     }
   }
 
@@ -37,32 +39,66 @@ export function generateFileName(
   const seconds = String(now.getSeconds()).padStart(2, '0');
 
   const suffix = index !== undefined ? `-${index + 1}` : '';
-  return `stamp-${year}${month}${day}-${hours}${minutes}${seconds}${suffix}.${extension}`;
+  return `${prefix}-${year}${month}${day}-${hours}${minutes}${seconds}${suffix}.${extension}`;
 }
 
 /**
- * High-definition Stamp Export Pipeline
- * Supports Web Download and XHS MiniTool native photo album saving.
+ * Render single artwork based on MakerMode
+ */
+export async function renderArtwork(
+  imageSource: string | HTMLImageElement,
+  mode: MakerMode = 'stamp',
+  options: StampOptions,
+  ticketOptions?: TicketOptions,
+  resolution = 2160,
+  transparent = true,
+  paperColor = '#FFF4DD'
+) {
+  if (mode === 'ticket' && ticketOptions) {
+    return await renderTicket(
+      imageSource,
+      ticketOptions,
+      resolution,
+      transparent,
+      paperColor
+    );
+  }
+  return await renderStamp(
+    imageSource,
+    options,
+    resolution,
+    transparent,
+    paperColor
+  );
+}
+
+/**
+ * High-definition Stamp/Ticket Export Pipeline
  */
 export async function downloadStamp(
   imageSource: string | HTMLImageElement,
   options: StampOptions,
   settings: ExportSettings,
   originalFileName?: string,
-  index?: number
+  index?: number,
+  mode: MakerMode = 'stamp',
+  ticketOptions?: TicketOptions
 ): Promise<{ success: boolean; message: string }> {
   try {
     const isTransparent = settings.transparent && settings.format === 'png';
 
-    const result = await renderStamp(
+    const result = await renderArtwork(
       imageSource,
+      mode,
       options,
+      ticketOptions,
       settings.resolution,
       isTransparent,
       settings.paperColor
     );
 
-    const fileName = generateFileName(originalFileName, settings.format, index);
+    const prefix = mode === 'ticket' ? 'ticket' : 'stamp';
+    const fileName = generateFileName(originalFileName, settings.format, index, prefix);
 
     // 1. Xiaohongshu Native MiniTool Environment
     if (isXhsMiniTool() && window.xhs?.miniTool) {
@@ -76,7 +112,10 @@ export async function downloadStamp(
             filePath: tempRes.filePath,
           });
           triggerConfetti();
-          return { success: true, message: '邮票已成功保存至手机相册！' };
+          return {
+            success: true,
+            message: mode === 'ticket' ? '旅行票根已成功保存至手机相册！' : '邮票已成功保存至手机相册！',
+          };
         }
       } catch (err: any) {
         console.warn('XHS JSBridge save failed, falling back to browser download', err);
@@ -109,14 +148,17 @@ export async function downloadStamp(
           URL.revokeObjectURL(url);
 
           triggerConfetti();
-          resolve({ success: true, message: '高清邮票已成功导出下载！' });
+          resolve({
+            success: true,
+            message: mode === 'ticket' ? '高清旅行票根已成功导出下载！' : '高清邮票已成功导出下载！',
+          });
         },
         mimeType,
         0.95
       );
     });
   } catch (error) {
-    console.error('Download stamp error', error);
+    console.error('Download error', error);
     return {
       success: false,
       message: '导出失败，请重试',
@@ -125,13 +167,15 @@ export async function downloadStamp(
 }
 
 /**
- * Batch Export Multiple Stamps
+ * Batch Export Multiple Stamps / Tickets
  */
 export async function downloadMultipleStamps(
   imageSources: (string | HTMLImageElement)[],
   options: StampOptions,
   settings: ExportSettings,
-  originalFileName?: string
+  originalFileName?: string,
+  mode: MakerMode = 'stamp',
+  ticketOptions?: TicketOptions
 ): Promise<{ success: boolean; message: string }> {
   try {
     let successCount = 0;
@@ -141,12 +185,13 @@ export async function downloadMultipleStamps(
         options,
         settings,
         originalFileName,
-        i
+        i,
+        mode,
+        ticketOptions
       );
       if (res.success) {
         successCount++;
       }
-      // Small pause between multiple file triggers in browser
       if (!isXhsMiniTool() && i < imageSources.length - 1) {
         await new Promise((r) => setTimeout(r, 300));
       }
@@ -155,7 +200,7 @@ export async function downloadMultipleStamps(
     triggerConfetti();
     return {
       success: true,
-      message: `已成功保存 ${successCount} 张高清邮票！`,
+      message: mode === 'ticket' ? `已成功保存 ${successCount} 张高清旅行票根！` : `已成功保存 ${successCount} 张高清邮票！`,
     };
   } catch (e) {
     console.error('Batch download failed', e);
@@ -167,13 +212,15 @@ export async function downloadMultipleStamps(
 }
 
 /**
- * Publish Multiple Stamps directly to XHS Note via JSBridge postNote
+ * Publish Multiple Stamps / Tickets directly to XHS Note via JSBridge postNote
  */
 export async function postStampToXhsNote(
   imageSources: (string | HTMLImageElement)[] | string | HTMLImageElement,
   options: StampOptions,
   settings: ExportSettings,
-  noteData?: { title?: string; content?: string; tags?: string }
+  noteData?: { title?: string; content?: string; tags?: string },
+  mode: MakerMode = 'stamp',
+  ticketOptions?: TicketOptions
 ): Promise<{ success: boolean; message: string }> {
   if (!isXhsMiniTool() || !window.xhs?.miniTool) {
     return { success: false, message: '当前非小红书容器环境' };
@@ -185,9 +232,11 @@ export async function postStampToXhsNote(
     const imageResources: { url: string }[] = [];
 
     for (const src of sources) {
-      const result = await renderStamp(
+      const result = await renderArtwork(
         src,
+        mode,
         options,
+        ticketOptions,
         Math.min(settings.resolution, 2160),
         settings.transparent,
         settings.paperColor
@@ -195,15 +244,23 @@ export async function postStampToXhsNote(
       imageResources.push({ url: result.dataUrl });
     }
 
-    const title = noteData?.title || 'Stamp Maker 专属复古邮票 💌';
-    const content =
-      noteData?.content ||
-      '用 Stamp Maker 制作的专属复古齿孔小邮票！氛围感拉满 ✨ #StampMaker #小红书小工具 #手账 #邮票';
+    const defaultTitle =
+      mode === 'ticket'
+        ? `我的专属旅行票根 · ${ticketOptions?.stationTitle || 'NEXT STATION'} 🎫`
+        : 'Stamp Maker 专属复古邮票 💌';
+
+    const defaultContent =
+      mode === 'ticket'
+        ? `用 Stamp Maker 制作的专属复古旅行票根！记录每一站的浪漫风景与独家记忆 ✨ #StampMaker #旅行票根 #手账 #小红书图文 #旅行摄影`
+        : '用 Stamp Maker 制作的专属复古齿孔小邮票！氛围感拉满 ✨ #StampMaker #小红书小工具 #手账 #邮票';
+
+    const title = noteData?.title || defaultTitle;
+    const content = noteData?.content || defaultContent;
 
     await window.xhs.miniTool.postNote({
       title,
       content,
-      tags: noteData?.tags || '#StampMaker',
+      tags: noteData?.tags || (mode === 'ticket' ? '#StampMaker #旅行票根' : '#StampMaker'),
       pageType: 'photo_publish',
       mediaInfo: {
         image_resources: imageResources,
@@ -219,12 +276,14 @@ export async function postStampToXhsNote(
 }
 
 /**
- * Copy transparent PNG stamp to user clipboard (for web environment)
+ * Copy transparent PNG artwork to user clipboard (for web environment)
  */
 export async function copyStampToClipboard(
   imageSource: string | HTMLImageElement,
   options: StampOptions,
-  settings: ExportSettings
+  settings: ExportSettings,
+  mode: MakerMode = 'stamp',
+  ticketOptions?: TicketOptions
 ): Promise<{ success: boolean; message: string }> {
   try {
     if (!navigator.clipboard || !window.ClipboardItem) {
@@ -234,9 +293,11 @@ export async function copyStampToClipboard(
       };
     }
 
-    const result = await renderStamp(
+    const result = await renderArtwork(
       imageSource,
+      mode,
       options,
+      ticketOptions,
       Math.min(settings.resolution, 2160),
       settings.transparent,
       settings.paperColor
@@ -256,7 +317,10 @@ export async function copyStampToClipboard(
             }),
           ]);
           triggerConfetti();
-          resolve({ success: true, message: '邮票已成功复制到剪贴板！' });
+          resolve({
+            success: true,
+            message: mode === 'ticket' ? '旅行票根已成功复制到剪贴板！' : '邮票已成功复制到剪贴板！',
+          });
         } catch (err) {
           console.error('Clipboard write error', err);
           resolve({
@@ -267,7 +331,7 @@ export async function copyStampToClipboard(
       }, 'image/png');
     });
   } catch (error) {
-    console.error('Copy stamp error', error);
+    console.error('Copy error', error);
     return {
       success: false,
       message: '复制失败，请点击「保存图片」',

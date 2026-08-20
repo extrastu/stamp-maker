@@ -1,4 +1,4 @@
-import { AspectRatioOption, StampStylePreset, StampOptions, ExportSettings, UserPreferences } from '../types';
+import { AspectRatioOption, StampStylePreset, StampOptions, TicketOptions, ExportSettings, UserPreferences } from '../types';
 
 export const RATIOS: AspectRatioOption[] = [
   { id: '1:1', label: '1:1', value: 1, width: 1, height: 1 },
@@ -50,14 +50,52 @@ export const COLOR_PRESETS = [
   { id: 'black', name: '曜黑', hex: '#1E1E1E', isLight: false },
 ];
 
+export const TICKET_COLOR_PRESETS = [
+  { id: 'moss', name: '苔藓绿', hex: '#587052', isLight: false },
+  { id: 'sunset', name: '落日橙', hex: '#EA7C56', isLight: false },
+  { id: 'slate', name: '灰蓝', hex: '#526E86', isLight: false },
+  { id: 'terracotta', name: '砖红', hex: '#8C483D', isLight: false },
+  { id: 'skymist', name: '雪青', hex: '#7DA6BD', isLight: false },
+  { id: 'sage', name: '抹茶', hex: '#798E60', isLight: false },
+  { id: 'cream', name: '米黄', hex: '#E2C799', isLight: true },
+  { id: 'dark', name: '黑巧', hex: '#26201A', isLight: false },
+];
+
+export const TICKET_STATION_PRESETS = [
+  { title: 'GREAT WALL OF CHINA', subtitle: '万里长城', themeColor: '#587052' },
+  { title: 'MOUNT FUJI', subtitle: '富士山', themeColor: '#7DA6BD' },
+  { title: 'GOLDEN GATE BRIDGE', subtitle: '金门大桥', themeColor: '#EA7C56' },
+  { title: 'GRAND CANYON', subtitle: '大峡谷', themeColor: '#8C483D' },
+  { title: 'TAJ MAHAL', subtitle: '泰姬陵', themeColor: '#526E86' },
+  { title: 'SWISS ALPS', subtitle: '阿尔卑斯山', themeColor: '#798E60' },
+  { title: 'SYDNEY OPERA HOUSE', subtitle: '悉尼歌剧院', themeColor: '#7DA6BD' },
+];
+
 export const DEFAULT_STAMP_OPTIONS: StampOptions = {
   style: 'classic',
-  margin: 0, // Default to Full-Bleed 0 margin (perforations punched directly into photo)
+  margin: 0,
   holeRadius: 18,
   holeGap: 46,
   backgroundColor: '#FFFFFF',
   photoRadius: 0,
   shadow: true,
+};
+
+const now = new Date();
+const currentYear = String(now.getFullYear());
+const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
+const currentDate = String(now.getDate()).padStart(2, '0');
+
+export const DEFAULT_TICKET_OPTIONS: TicketOptions = {
+  stationTitle: 'GREAT WALL OF CHINA',
+  stationSubtitle: '万里长城',
+  subTitle: 'NEXT STATION',
+  year: currentYear,
+  date: `${currentMonth}.${currentDate}`,
+  ticketNo: '120458464677987155',
+  themeColor: '#587052',
+  textColor: '#FFFFFF',
+  photoRadius: 18,
 };
 
 export const DEFAULT_EXPORT_SETTINGS: ExportSettings = {
@@ -68,6 +106,7 @@ export const DEFAULT_EXPORT_SETTINGS: ExportSettings = {
 };
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
+  mode: 'stamp',
   ratioId: '3:4',
   styleId: 'classic',
   margin: 0,

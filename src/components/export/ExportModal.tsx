@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Download, X, Check, Layers } from 'lucide-react';
-import { StampOptions, ExportSettings } from '../../types';
+import { MakerMode, StampOptions, TicketOptions, ExportSettings } from '../../types';
 import { downloadStamp, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   croppedImageUrl: string;
+  mode?: MakerMode;
   options: StampOptions;
+  ticketOptions?: TicketOptions;
   originalFileName?: string;
   onToast: (type: 'success' | 'error', message: string) => void;
 }
@@ -16,7 +18,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   croppedImageUrl,
+  mode = 'stamp',
   options,
+  ticketOptions,
   originalFileName,
   onToast,
 }) => {
@@ -29,6 +33,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   const [isExporting, setIsExporting] = useState(false);
   const isXhs = isXhsMiniTool();
+  const isTicket = mode === 'ticket';
 
   if (!isOpen) return null;
 
@@ -39,7 +44,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         croppedImageUrl,
         options,
         settings,
-        originalFileName
+        originalFileName,
+        undefined,
+        mode,
+        ticketOptions
       );
       onToast(res.success ? 'success' : 'error', res.message);
       if (res.success) onClose();
@@ -63,7 +71,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         {/* Modal Header */}
         <div className="px-5 py-4 border-b-2 border-ink flex items-center justify-between bg-card">
           <div>
-            <h3 className="font-extrabold text-[15px] text-ink leading-tight">导出高级参数</h3>
+            <h3 className="font-extrabold text-[15px] text-ink leading-tight">
+              导出高级参数 ({isTicket ? '旅行票根' : '经典邮票'})
+            </h3>
             <p className="text-[11px] text-ink-2 mt-0.5 font-medium">按需定制输出精度与底衬</p>
           </div>
           <button
@@ -136,7 +146,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   <div className="text-xs font-extrabold">
                     透明镂空 (PNG)
                   </div>
-                  <div className="text-[10px] text-ink-2 font-medium mt-0.5">真实齿孔边缘</div>
+                  <div className="text-[10px] text-ink-2 font-medium mt-0.5">
+                    {isTicket ? '真实撕裂齿孔' : '真实齿孔边缘'}
+                  </div>
                 </div>
               </button>
 
@@ -198,7 +210,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             className="w-full h-11 rounded-2xl bg-accent hover:bg-accent-hover text-white font-extrabold text-sm flex items-center justify-center gap-2 border-2 border-ink shadow-neo-lg btn-neo transition-all disabled:opacity-50"
           >
             <Download className="size-4 stroke-[2.5]" />
-            <span>{isExporting ? '导出中...' : isXhs ? '保存高清邮票到相册 📬' : '下载高清邮票图片 📬'}</span>
+            <span>
+              {isExporting
+                ? '导出中...'
+                : isXhs
+                ? `保存高清${isTicket ? '旅行票根' : '邮票'}到相册 📬`
+                : `下载高清${isTicket ? '旅行票根' : '邮票'}图片 📬`}
+            </span>
           </button>
         </div>
       </div>

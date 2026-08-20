@@ -10,6 +10,8 @@ export interface AspectRatioOption {
   height: number;
 }
 
+export type MakerMode = 'stamp' | 'ticket';
+
 export type StampStyleId = 'classic' | 'fine' | 'wide' | 'custom';
 
 export interface StampStylePreset {
@@ -33,6 +35,18 @@ export interface StampOptions {
   shadow: boolean; // Soft shadow in preview
 }
 
+export interface TicketOptions {
+  stationTitle: string; // e.g. "GREAT WALL OF CHINA"
+  stationSubtitle: string; // e.g. "万里长城"
+  subTitle: string; // e.g. "NEXT STATION"
+  year: string; // e.g. "2026"
+  date: string; // e.g. "08.20"
+  ticketNo: string; // e.g. "120458464677987155"
+  themeColor: string; // Background color of ticket card
+  textColor: string; // Text color on ticket
+  photoRadius: number; // Rounded corner of photo on ticket
+}
+
 export interface ExportSettings {
   format: 'png' | 'jpeg' | 'webp';
   resolution: 1080 | 2160 | 3240; // Max dimension
@@ -41,6 +55,7 @@ export interface ExportSettings {
 }
 
 export interface UserPreferences {
+  mode: MakerMode;
   ratioId: AspectRatioId;
   styleId: StampStyleId;
   margin: number;
@@ -61,6 +76,7 @@ export interface ImageItem {
   croppedAreaPixels: Area | null;
   ratioId: AspectRatioId;
   rotation: number;
+  ticketOptions?: TicketOptions;
 }
 
 export interface ImageState {

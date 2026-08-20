@@ -1,37 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send } from 'lucide-react';
-import { StampOptions, ExportSettings, ImageItem } from '../../types';
-import { renderStamp } from '../../utils/renderStamp';
-import { postStampToXhsNote, isXhsMiniTool } from '../../utils/exportStamp';
+import { MakerMode, StampOptions, TicketOptions, ExportSettings, ImageItem } from '../../types';
+import { renderArtwork, postStampToXhsNote, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface PostNoteModalProps {
   isOpen: boolean;
   onClose: () => void;
   croppedImageUrl?: string;
   images?: ImageItem[];
+  mode?: MakerMode;
   options: StampOptions;
+  ticketOptions?: TicketOptions;
   onToast: (type: 'success' | 'error', message: string) => void;
 }
 
-const DEFAULT_TITLES = [
+const DEFAULT_STAMP_TITLES = [
   'Stamp Maker 专属复古邮票 💌',
   '定格浪漫：我的复古小邮票 💌',
   '一张照片变成邮票有多绝 ✨',
   '今日份手账邮票分享 ☕',
 ];
 
-const DEFAULT_CONTENT = `用 Stamp Maker 制作的专属复古齿孔小邮票！\n\n氛围感直接拉满，不管是做手账素材还是小红书配图都超级好看 ✨ 推荐大家也来试试～\n\n#StampMaker #小红书小工具 #手账 #邮票 #日常摄影 #小红书图文`;
+const DEFAULT_TICKET_TITLES = [
+  '我的专属旅行票根 · 独家记忆 🎫',
+  '一张照片定制复古旅行票根 🗺️',
+  '下一站：定格沿途的风景 🚄',
+  '手账素材分享：复古旅行车票 ☕',
+];
+
+const DEFAULT_STAMP_CONTENT = `用 Stamp Maker 制作的专属复古齿孔小邮票！\n\n氛围感直接拉满，不管是做手账素材还是小红书配图都超级好看 ✨ 推荐大家也来试试～\n\n#StampMaker #小红书小工具 #手账 #邮票 #日常摄影 #小红书图文`;
+
+const DEFAULT_TICKET_CONTENT = `用 Stamp Maker 制作的专属复古旅行票根！\n\n带上专属的站点名、日期与条形码，记录每一站的浪漫风景与旅途回忆 🗺️ 打印出来做手账素材太绝了！\n\n#StampMaker #旅行票根 #手账 #小红书图文 #旅行摄影 #自制票根`;
 
 export const PostNoteModal: React.FC<PostNoteModalProps> = ({
   isOpen,
   onClose,
   croppedImageUrl,
   images = [],
+  mode = 'stamp',
   options,
+  ticketOptions,
   onToast,
 }) => {
-  const [title, setTitle] = useState(DEFAULT_TITLES[0]);
-  const [content, setContent] = useState(DEFAULT_CONTENT);
+  const isTicket = mode === 'ticket';
+  const defaultTitles = isTicket ? DEFAULT_TICKET_TITLES : DEFAULT_STAMP_TITLES;
+  const defaultContent = isTicket ? DEFAULT_TICKET_CONTENT : DEFAULT_STAMP_CONTENT;
+
+  const [title, setTitle] = useState(defaultTitles[0]);
+  const [content, setContent] = useState(defaultContent);
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [activePreviewIndex, setActivePreviewIndex] = useState(0);
   const [isPosting, setIsPosting] = useState(false);
@@ -47,13 +63,18 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
   useEffect(() => {
     if (!isOpen || imageSources.length === 0) return;
 
+    setTitle(isTicket ? (ticketOptions?.stationTitle ? `我的专属旅行票根 · ${ticketOptions.stationTitle} 🎫` : defaultTitles[0]) : defaultTitles[0]);
+    setContent(defaultContent);
+
     const preparePreviews = async () => {
       try {
         const urls: string[] = [];
         for (const src of imageSources) {
-          const res = await renderStamp(
+          const res = await renderArtwork(
             src,
+            mode,
             options,
+            ticketOptions,
             1080,
             !includeBackdrop,
             '#FFF4DD'
@@ -67,7 +88,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
     };
 
     preparePreviews();
-  }, [isOpen, options, includeBackdrop, images.length, croppedImageUrl]);
+  }, [isOpen, mode, options, ticketOptions, includeBackdrop, images.length, croppedImageUrl]);
 
   if (!isOpen) return null;
 
@@ -95,14 +116,16 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
           {
             title: title.trim(),
             content: content.trim(),
-            tags: '#StampMaker',
-          }
+            tags: isTicket ? '#StampMaker #旅行票根' : '#StampMaker',
+          },
+          mode,
+          ticketOptions
         );
         onToast(res.success ? 'success' : 'error', res.message);
         if (res.success) onClose();
       } else {
         // Fallback simulation in browser
-        onToast('success', `已生成包含 ${imageSources.length} 张邮票的小红书图文笔记（浏览器模拟环境）`);
+        onToast('success', `已生成包含 ${imageSources.length} 张${isTicket ? '旅行票根' : '邮票'}的小红书图文笔记（浏览器模拟环境）`);
         setTimeout(() => {
           onClose();
         }, 1200);
@@ -130,13 +153,15 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
         <div className="px-5 py-4 border-b-2 border-ink flex items-center justify-between bg-card">
           <div className="flex items-center gap-2">
             <div className="flex size-8 items-center justify-center rounded-xl bg-rose border-2 border-ink shadow-neo-sm text-sm">
-              📕
+              {isTicket ? '🎫' : '📕'}
             </div>
             <div>
               <h3 className="font-extrabold text-[15px] text-ink leading-tight">
                 创建小红书图文 {imageSources.length > 1 && `(${imageSources.length}张)`}
               </h3>
-              <p className="text-[11px] text-ink-2 mt-0.5 font-medium">将制作好的邮票一键带入发布页</p>
+              <p className="text-[11px] text-ink-2 mt-0.5 font-medium">
+                将制作好的{isTicket ? '旅行票根' : '邮票'}一键带入发布页
+              </p>
             </div>
           </div>
           <button
@@ -170,7 +195,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
               {currentPreview ? (
                 <img
                   src={currentPreview}
-                  alt="Note Stamp Preview"
+                  alt="Note Artwork Preview"
                   className="max-h-full object-contain drop-shadow-[0_8px_18px_rgba(40,30,20,0.15)]"
                 />
               ) : (
@@ -215,7 +240,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
             />
             {/* Quick Title Chips */}
             <div className="flex items-center gap-1.5 overflow-x-auto pt-2 no-scrollbar">
-              {DEFAULT_TITLES.map((t, idx) => (
+              {defaultTitles.map((t, idx) => (
                 <button
                   key={idx}
                   type="button"
@@ -239,7 +264,7 @@ export const PostNoteModal: React.FC<PostNoteModalProps> = ({
               maxLength={1000}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="分享这张邮票背后的故事..."
+              placeholder="分享这张作品背后的故事..."
               className="w-full px-3.5 py-2.5 rounded-xl border-2 border-ink text-xs font-medium text-ink focus:outline-none focus:bg-sun-tint bg-card transition-all leading-relaxed resize-none"
             />
           </div>
