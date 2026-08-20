@@ -1,0 +1,25 @@
+{
+  "name": "Stamp Maker — 复古邮票图片生成器",
+  "short_name": "Stamp Maker",
+  "description": "一键将日常照片转换为真实物理齿孔邮票与手账贴纸，100% 本地离线处理。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFF4DD",
+  "theme_color": "#FFF4DD",
+  "orientation": "portrait",
+  "categories": ["photo", "productivity", "utilities", "design"],
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
