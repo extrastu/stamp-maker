@@ -126,7 +126,8 @@ export async function downloadStamp(
 export async function postStampToXhsNote(
   imageSource: string | HTMLImageElement,
   options: StampOptions,
-  settings: ExportSettings
+  settings: ExportSettings,
+  noteData?: { title?: string; content?: string; tags?: string }
 ): Promise<{ success: boolean; message: string }> {
   if (!isXhsMiniTool() || !window.xhs?.miniTool) {
     return { success: false, message: '当前非小红书容器环境' };
@@ -141,9 +142,15 @@ export async function postStampToXhsNote(
       settings.paperColor
     );
 
+    const title = noteData?.title || 'Stamp Maker 专属复古邮票 💌';
+    const content =
+      noteData?.content ||
+      '用 Stamp Maker 制作的复古齿孔小邮票！氛围感拉满 ✨ #StampMaker #小红书小工具 #手账 #邮票';
+
     await window.xhs.miniTool.postNote({
-      title: '我的专属复古邮票 💌',
-      content: '用 Stamp Maker 制作的专属邮票，快来试试吧！ #小红书小工具 #手账 #邮票',
+      title,
+      content,
+      tags: noteData?.tags || '#StampMaker',
       pageType: 'photo_publish',
       mediaInfo: {
         image_resources: [{ url: result.dataUrl }],

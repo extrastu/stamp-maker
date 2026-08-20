@@ -113,8 +113,8 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
           <Settings className='w-5 h-5 stroke-[1.8]' />
         </button>
 
-        <h1 className='text-2xl font-bold text-neutral-900 tracking-tight'>邮票制作</h1>
-        <p className='text-xs text-neutral-500 mt-1'>把每一张照片，变成你的专属邮票</p>
+        <h1 className='text-2xl font-bold text-neutral-900 tracking-tight font-serif'>Stamp Maker</h1>
+        <p className='text-xs text-neutral-500 mt-1'>把每一张照片，变成你的专属复古邮票</p>
       </div>
 
       {/* Main Action Cards */}
@@ -193,7 +193,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-neutral-900">邮票制作</h3>
+              <h3 className="text-base font-bold text-neutral-900 font-serif">Stamp Maker</h3>
               <p className="text-xs text-neutral-500 mt-1.5 leading-relaxed">
                 把日常照片一键转换为真实齿孔邮票。<br />
                 100% 浏览器纯本地处理，保障隐私安全。

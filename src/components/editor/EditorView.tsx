@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Copy, Share2 } from 'lucide-react';
+import { ArrowLeft, Download, Copy, SlidersHorizontal } from 'lucide-react';
 import { StampOptions, StampStyleId } from '../../types';
 import { StampPreview } from './StampPreview';
 import { COLOR_PRESETS, DEFAULT_EXPORT_SETTINGS, STAMP_STYLES } from '../../utils/constants';
 import { ExportModal } from '../export/ExportModal';
+import { PostNoteModal } from '../export/PostNoteModal';
 import { copyStampToClipboard, downloadStamp, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface EditorViewProps {
@@ -24,6 +25,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   onToast,
 }) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isPostNoteModalOpen, setIsPostNoteModalOpen] = useState(false);
   const [isQuickCopying, setIsQuickCopying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const isXhs = isXhsMiniTool();
@@ -96,7 +98,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-neutral-900 flex flex-col justify-between max-w-md mx-auto relative select-none">
-      {/* 1. Top Navigation Row (Separated from stamp stage) */}
+      {/* 1. Top Navigation Row */}
       <div className="px-4 pt-3.5 pb-1 flex items-center justify-between z-10 safe-top">
         <button
           type="button"
@@ -107,9 +109,15 @@ export const EditorView: React.FC<EditorViewProps> = ({
           <span>重新构图</span>
         </button>
 
-        <span className="text-[11px] text-neutral-400 font-medium tracking-wide">
-          邮票预览
-        </span>
+        <button
+          type="button"
+          onClick={() => setIsExportModalOpen(true)}
+          className="flex items-center gap-1 text-xs text-neutral-500 hover:text-neutral-900 px-2 py-1 rounded-lg hover:bg-neutral-200/50 transition-colors"
+          title="高级导出设置"
+        >
+          <SlidersHorizontal className="w-3.5 h-3.5" />
+          <span>导出设置</span>
+        </button>
       </div>
 
       {/* 2. Main Stamp Live Preview Stage */}
@@ -120,7 +128,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
         />
       </div>
 
-      {/* 2. Customization Control Panel (Card Style) */}
+      {/* 3. Customization Control Panel (Card Style) */}
       <div className="p-4 sm:p-5 bg-white rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.04)] border-t border-neutral-100 space-y-4 safe-bottom">
         {/* Border Styles (边框样式) */}
         <div>
@@ -200,44 +208,53 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
         {/* Action Buttons Section */}
         <div className="pt-2 space-y-2.5">
-          {/* Main Primary CTA Button */}
+          {/* Main Primary CTA: Post to Little Red Book Note */}
           <button
-            onClick={handleSaveDirectly}
-            disabled={isSaving}
-            className="w-full h-12 rounded-2xl bg-[#7059E8] hover:bg-[#5E47E0] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-purple-300/50 active:scale-[0.98] disabled:opacity-50"
+            onClick={() => setIsPostNoteModalOpen(true)}
+            className="w-full h-12 rounded-2xl bg-[#E03A3E] hover:bg-[#C92F33] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-red-200 active:scale-[0.98]"
           >
-            <Download className="w-4 h-4 stroke-[2.2]" />
-            <span>{isSaving ? '正在生成高清图片...' : isXhs ? '保存邮票到手机相册' : '保存高清邮票图片'}</span>
+            <span className="text-base">📕</span>
+            <span>创建小红书图文笔记</span>
           </button>
 
           {/* Secondary Action Buttons Grid */}
           <div className="grid grid-cols-2 gap-2.5">
             <button
-              onClick={handleCopyClipboard}
-              disabled={isQuickCopying}
-              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-medium text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
+              onClick={handleSaveDirectly}
+              disabled={isSaving}
+              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98] disabled:opacity-50"
             >
-              <Copy className="w-3.5 h-3.5" />
-              <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
+              <Download className="w-3.5 h-3.5" />
+              <span>{isSaving ? '正在保存...' : isXhs ? '保存到手机相册' : '保存高清图片'}</span>
             </button>
 
             <button
-              onClick={() => setIsExportModalOpen(true)}
-              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-medium text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
+              onClick={handleCopyClipboard}
+              disabled={isQuickCopying}
+              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>{isXhs ? '发布小红书' : '分享 / 更多'}</span>
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
             </button>
           </div>
         </div>
 
         {/* Quality Tip */}
-        <div className="text-center text-[11px] text-neutral-400 font-normal pt-1">
-          建议保存为 PNG 以获得真实透明齿孔效果
+        <div className="text-center text-[11px] text-neutral-400 font-normal pt-0.5">
+          支持一键拉起小红书发布图文 · 图片纯本地安全处理
         </div>
       </div>
 
-      {/* Export & Share Modal */}
+      {/* Post to Note Modal */}
+      <PostNoteModal
+        isOpen={isPostNoteModalOpen}
+        onClose={() => setIsPostNoteModalOpen(false)}
+        croppedImageUrl={croppedImageUrl}
+        options={options}
+        onToast={onToast}
+      />
+
+      {/* Export & Resolution Settings Modal */}
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
