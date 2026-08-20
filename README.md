@@ -6,14 +6,17 @@
 
 ### 把日常随手拍，一键变成专属复古齿孔小邮票
 
+🌐 **在线体验**: [https://stampmakers.pages.dev/](https://stampmakers.pages.dev/)  
+🐙 **GitHub 仓库**: [extrastu/stamp-maker](https://github.com/extrastu/stamp-maker)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Website](https://img.shields.io/badge/Website-stampmakers.pages.dev-blue.svg)](https://stampmakers.pages.dev/)
 [![Xiaohongshu](https://img.shields.io/badge/Xiaohongshu-关注作者-FF2442.svg)](https://xhslink.cn/m/lTR6WMDnhB)
 [![React](https://img.shields.io/badge/React-18.3-blue.svg)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue.svg)](https://www.typescriptlang.org/)
 [![Vite](https://img.shields.io/badge/Vite-6.0-646CFF.svg)](https://vitejs.dev/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38B2AC.svg)](https://tailwindcss.com/)
 
-[功能特性](#-功能特性) • [在线体验](#-快速开始) • [关注作者](#-关注作者) • [小红书小工具适配](#-小红书离线小工具集成) • [开源协议](#-开源协议)
+[在线体验](https://stampmakers.pages.dev/) • [功能特性](#-功能特性) • [快速开始](#-快速开始) • [关注作者](#-关注作者) • [开源协议](#-开源协议)
 
 </div>
 

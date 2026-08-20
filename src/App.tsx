@@ -107,7 +107,10 @@ export const App: React.FC = () => {
       {/* Main View Transition */}
       <main className="w-full">
         {currentStep === 'start' && (
-          <StartView onImageSelected={handleImageSelected} />
+          <StartView
+            onImageSelected={handleImageSelected}
+            onToast={showToast}
+          />
         )}
 
         {currentStep === 'crop' && imageState.rawUrl && (
