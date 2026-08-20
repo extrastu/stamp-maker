@@ -12,6 +12,8 @@ export interface AspectRatioOption {
 
 export type MakerMode = 'stamp' | 'ticket';
 
+export type TicketOrientation = 'vertical' | 'horizontal';
+
 export type StampStyleId = 'classic' | 'fine' | 'wide' | 'custom';
 
 export interface StampStylePreset {
@@ -36,6 +38,7 @@ export interface StampOptions {
 }
 
 export interface TicketOptions {
+  orientation: TicketOrientation; // 'vertical' | 'horizontal'
   stationTitle: string; // e.g. "GREAT WALL OF CHINA"
   stationSubtitle: string; // e.g. "万里长城"
   subTitle: string; // e.g. "NEXT STATION"

@@ -51,24 +51,37 @@ export const COLOR_PRESETS = [
 ];
 
 export const TICKET_COLOR_PRESETS = [
-  { id: 'moss', name: '苔藓绿', hex: '#587052', isLight: false },
+  { id: 'oat', name: '燕麦米', hex: '#D8CBB5', isLight: true },
+  { id: 'mutedblue', name: '灰蓝', hex: '#7B96B2', isLight: false },
+  { id: 'taupe', name: '暖灰褐', hex: '#B8A18E', isLight: false },
+  { id: 'sage', name: '抹茶绿', hex: '#8E9A82', isLight: false },
+  { id: 'dustyrose', name: '暮色粉', hex: '#C68B93', isLight: false },
+  { id: 'slateash', name: '浅青灰', hex: '#BAC2C7', isLight: true },
   { id: 'sunset', name: '落日橙', hex: '#EA7C56', isLight: false },
-  { id: 'slate', name: '灰蓝', hex: '#526E86', isLight: false },
-  { id: 'terracotta', name: '砖红', hex: '#8C483D', isLight: false },
-  { id: 'skymist', name: '雪青', hex: '#7DA6BD', isLight: false },
-  { id: 'sage', name: '抹茶', hex: '#798E60', isLight: false },
-  { id: 'cream', name: '米黄', hex: '#E2C799', isLight: true },
-  { id: 'dark', name: '黑巧', hex: '#26201A', isLight: false },
+  { id: 'charcoal', name: '炭灰', hex: '#6B7077', isLight: false },
+  { id: 'dark', name: '曜黑', hex: '#2A2521', isLight: false },
 ];
 
-export const TICKET_STATION_PRESETS = [
-  { title: 'GREAT WALL OF CHINA', subtitle: '万里长城', themeColor: '#587052' },
-  { title: 'MOUNT FUJI', subtitle: '富士山', themeColor: '#7DA6BD' },
+export const VERTICAL_TICKET_PRESETS = [
+  { title: 'GREAT WALL OF CHINA', subtitle: '万里长城', themeColor: '#8E9A82' },
+  { title: 'MOUNT FUJI', subtitle: '富士山', themeColor: '#7B96B2' },
   { title: 'GOLDEN GATE BRIDGE', subtitle: '金门大桥', themeColor: '#EA7C56' },
-  { title: 'GRAND CANYON', subtitle: '大峡谷', themeColor: '#8C483D' },
-  { title: 'TAJ MAHAL', subtitle: '泰姬陵', themeColor: '#526E86' },
-  { title: 'SWISS ALPS', subtitle: '阿尔卑斯山', themeColor: '#798E60' },
-  { title: 'SYDNEY OPERA HOUSE', subtitle: '悉尼歌剧院', themeColor: '#7DA6BD' },
+  { title: 'GRAND CANYON', subtitle: '大峡谷', themeColor: '#B8A18E' },
+  { title: 'TAJ MAHAL', subtitle: '泰姬陵', themeColor: '#D8CBB5' },
+  { title: 'SWISS ALPS', subtitle: '阿尔卑斯山', themeColor: '#BAC2C7' },
+  { title: 'SYDNEY OPERA HOUSE', subtitle: '悉尼歌剧院', themeColor: '#7B96B2' },
+];
+
+export const HORIZONTAL_TICKET_PRESETS = [
+  { title: 'EXPLORE', subtitle: '探索发现', themeColor: '#D8CBB5' },
+  { title: 'SUNSET', subtitle: '落日余晖', themeColor: '#C68B93' },
+  { title: 'HIKING', subtitle: '徒步山野', themeColor: '#8E9A82' },
+  { title: 'MOUNTAIN', subtitle: '雪山之巅', themeColor: '#7B96B2' },
+  { title: 'SURFING', subtitle: '追浪逐海', themeColor: '#B8A18E' },
+  { title: 'DIVING', subtitle: '潜入深蓝', themeColor: '#7B96B2' },
+  { title: 'WINTER', subtitle: '凛冬白雪', themeColor: '#BAC2C7' },
+  { title: 'CAVE', subtitle: '秘境洞穴', themeColor: '#6B7077' },
+  { title: 'PADDLING', subtitle: '桨板泛舟', themeColor: '#8E9A82' },
 ];
 
 export const DEFAULT_STAMP_OPTIONS: StampOptions = {
@@ -84,17 +97,17 @@ export const DEFAULT_STAMP_OPTIONS: StampOptions = {
 const now = new Date();
 const currentYear = String(now.getFullYear());
 const currentMonth = String(now.getMonth() + 1).padStart(2, '0');
-const currentDate = String(now.getDate()).padStart(2, '0');
 
 export const DEFAULT_TICKET_OPTIONS: TicketOptions = {
-  stationTitle: 'GREAT WALL OF CHINA',
-  stationSubtitle: '万里长城',
-  subTitle: 'NEXT STATION',
+  orientation: 'horizontal',
+  stationTitle: 'EXPLORE',
+  stationSubtitle: '探索发现',
+  subTitle: 'XIAOHONGSHU',
   year: currentYear,
-  date: `${currentMonth}.${currentDate}`,
-  ticketNo: '120458464677987155',
-  themeColor: '#587052',
-  textColor: '#FFFFFF',
+  date: `${currentMonth}`,
+  ticketNo: '2026',
+  themeColor: '#D8CBB5',
+  textColor: '#1A1410',
   photoRadius: 18,
 };
 

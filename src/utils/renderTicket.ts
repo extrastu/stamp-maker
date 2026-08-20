@@ -17,7 +17,7 @@ function isColorLight(hex: string): boolean {
   const g = parseInt(cleanHex.substring(2, 4), 16) || 0;
   const b = parseInt(cleanHex.substring(4, 6), 16) || 0;
   const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-  return brightness > 160;
+  return brightness > 165;
 }
 
 /**
@@ -46,9 +46,9 @@ function drawRoundedRect(
 }
 
 /**
- * Draw ticket card path with 4 rounded corners and 2 side notches
+ * Draw vertical ticket card path (notches on left and right edges)
  */
-function drawTicketCardPath(
+function drawVerticalTicketCardPath(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -59,31 +59,24 @@ function drawTicketCardPath(
   notchRadius: number
 ) {
   ctx.beginPath();
-  // Top left corner
   ctx.moveTo(x + r, y);
-  // Top edge
   ctx.lineTo(x + w - r, y);
-  // Top right corner
   ctx.arcTo(x + w, y, x + w, y + r, r);
 
   // Right edge down to notch
   ctx.lineTo(x + w, notchY - notchRadius);
-  // Right side inward semicircular notch
   ctx.arc(x + w, notchY, notchRadius, -Math.PI / 2, Math.PI / 2, true);
 
   // Right edge down to bottom right
   ctx.lineTo(x + w, y + h - r);
-  // Bottom right corner
   ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
 
   // Bottom edge
   ctx.lineTo(x + r, y + h);
-  // Bottom left corner
   ctx.arcTo(x, y + h, x, y + h - r, r);
 
   // Left edge up to notch
   ctx.lineTo(x, notchY + notchRadius);
-  // Left side inward semicircular notch
   ctx.arc(x, notchY, notchRadius, Math.PI / 2, -Math.PI / 2, true);
 
   // Left edge up to top left
@@ -93,9 +86,61 @@ function drawTicketCardPath(
 }
 
 /**
- * Draw vertical barcode with ticket number on the right stub
+ * Draw horizontal ticket card path based on reference image:
+ * - 4 rounded corners
+ * - Left edge middle cutout notch
+ * - Right edge middle cutout notch
+ * - Top and bottom middle tear notches at notchX
  */
-function drawBarcode(
+function drawHorizontalTicketCardPath(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+  notchX: number,
+  notchRadius: number
+) {
+  const edgeNotchY = y + h / 2;
+  const edgeNotchR = notchRadius * 0.95;
+
+  ctx.beginPath();
+  // 1. Top left corner
+  ctx.moveTo(x + r, y);
+
+  // Top edge to middle tear notch
+  ctx.lineTo(notchX - notchRadius, y);
+  ctx.arc(notchX, y, notchRadius, Math.PI, 0, true);
+
+  // Top edge to top right corner
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+
+  // 2. Right edge with middle notch
+  ctx.lineTo(x + w, edgeNotchY - edgeNotchR);
+  ctx.arc(x + w, edgeNotchY, edgeNotchR, -Math.PI / 2, Math.PI / 2, true);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+
+  // 3. Bottom edge with middle tear notch
+  ctx.lineTo(notchX + notchRadius, y + h);
+  ctx.arc(notchX, y + h, notchRadius, 0, Math.PI, true);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+
+  // 4. Left edge with middle notch
+  ctx.lineTo(x, edgeNotchY + edgeNotchR);
+  ctx.arc(x, edgeNotchY, edgeNotchR, Math.PI / 2, -Math.PI / 2, true);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+/**
+ * Draw vertical barcode on vertical ticket stub
+ */
+function drawVerticalBarcode(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
@@ -104,20 +149,16 @@ function drawBarcode(
   codeString: string
 ) {
   ctx.save();
-
-  // White backing pill for barcode
   const cardR = Math.round(width * 0.15);
   ctx.fillStyle = '#FFFFFF';
   drawRoundedRect(ctx, x, y, width, height, cardR);
   ctx.fill();
 
-  // Draw barcode stripes horizontally across the box
   const padX = width * 0.16;
   const padY = height * 0.08;
   const barAreaWidth = width - padX * 2;
   const barAreaHeight = height - padY * 2;
 
-  // Generate bar patterns
   const pattern = [2, 1, 3, 1, 2, 4, 1, 2, 1, 3, 2, 1, 4, 1, 2, 3, 1, 2, 1, 4, 2, 1, 3, 1, 2];
   let totalUnits = 0;
   pattern.forEach((p) => (totalUnits += p));
@@ -134,7 +175,7 @@ function drawBarcode(
     currentY += barH;
   }
 
-  // Draw vertical rotated ticket number text
+  // Rotated ticket code text
   ctx.save();
   ctx.translate(x + width - padX * 0.5, y + height - padY);
   ctx.rotate(-Math.PI / 2);
@@ -147,7 +188,39 @@ function drawBarcode(
 }
 
 /**
- * Travel Ticket Stub Canvas Renderer
+ * Draw authentic reference horizontal ticket barcode (clean direct ink bars)
+ */
+function drawDirectInkBarcode(
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  bottomY: number,
+  width: number,
+  height: number,
+  inkColor: string
+) {
+  ctx.save();
+  const pattern = [2, 1, 3, 1, 1, 2, 4, 1, 2, 1, 3, 2, 1, 3, 1, 2, 1, 2, 1, 4, 2, 1, 3, 1, 2, 1, 2];
+  let totalUnits = 0;
+  pattern.forEach((p) => (totalUnits += p));
+
+  const unitWidth = width / totalUnits;
+  let currentX = centerX - width / 2;
+  const startY = bottomY - height;
+
+  ctx.fillStyle = inkColor;
+  for (let i = 0; i < pattern.length; i++) {
+    const barW = pattern[i] * unitWidth;
+    if (i % 2 === 0) {
+      ctx.fillRect(currentX, startY, barW, height);
+    }
+    currentX += barW;
+  }
+
+  ctx.restore();
+}
+
+/**
+ * Travel Ticket Stub Canvas Renderer (Vertical & Horizontal)
  */
 export async function renderTicket(
   imageSource: string | HTMLImageElement,
@@ -163,23 +236,18 @@ export async function renderTicket(
 
   const originalPhotoWidth = img.naturalWidth || img.width;
   const originalPhotoHeight = img.naturalHeight || img.height;
+  const isHorizontal = options.orientation === 'horizontal';
 
-  // Ticket Aspect Ratio fixed around standard 1 : 1.42
   const baseScale = targetMaxDimension / 1200;
-  const cardWidth = Math.round(800 * baseScale);
-  const cardHeight = Math.round(1140 * baseScale);
 
-  const cornerRadius = Math.round(36 * baseScale);
-  const notchRadius = Math.round(18 * baseScale);
-  const cardPadding = Math.round(32 * baseScale);
+  // Set card dimensions according to orientation
+  // Horizontal ticket reference: 1000 x 580 (approx 1.72:1)
+  const cardWidth = isHorizontal ? Math.round(1000 * baseScale) : Math.round(800 * baseScale);
+  const cardHeight = isHorizontal ? Math.round(580 * baseScale) : Math.round(1140 * baseScale);
 
-  // Photo dimensions (fits inside top half with padding)
-  const photoContainerWidth = cardWidth - cardPadding * 2;
-  const photoContainerHeight = Math.round(photoContainerWidth * 0.96);
-  const photoRadius = Math.round((options.photoRadius || 18) * baseScale);
-
-  // Notch & Tear Line Y Position
-  const tearLineY = cardPadding + photoContainerHeight + Math.round(28 * baseScale);
+  const cornerRadius = isHorizontal ? Math.round(22 * baseScale) : Math.round(34 * baseScale);
+  const notchRadius = isHorizontal ? Math.round(15 * baseScale) : Math.round(18 * baseScale);
+  const cardPadding = isHorizontal ? Math.round(22 * baseScale) : Math.round(28 * baseScale);
 
   // 1. Create Ticket Canvas
   const ticketCanvas = document.createElement('canvas');
@@ -191,146 +259,271 @@ export async function renderTicket(
     throw new Error('Failed to get 2d context for ticket canvas');
   }
 
-  // A. Draw Ticket Card Body with Notches
-  ctx.save();
-  drawTicketCardPath(
-    ctx,
-    0,
-    0,
-    cardWidth,
-    cardHeight,
-    cornerRadius,
-    tearLineY,
-    notchRadius
-  );
-  ctx.fillStyle = options.themeColor;
-  ctx.fill();
-
-  // B. Draw Top Photo
-  ctx.save();
-  const photoX = cardPadding;
-  const photoY = cardPadding;
-
-  // Clip photo to rounded rectangle
-  ctx.beginPath();
-  drawRoundedRect(
-    ctx,
-    photoX,
-    photoY,
-    photoContainerWidth,
-    photoContainerHeight,
-    photoRadius
-  );
-  ctx.clip();
-
-  // Draw image with cover aspect ratio
-  const imgAspect = originalPhotoWidth / originalPhotoHeight;
-  const containerAspect = photoContainerWidth / photoContainerHeight;
-  let drawW = photoContainerWidth;
-  let drawH = photoContainerHeight;
-  let drawX = photoX;
-  let drawY = photoY;
-
-  if (imgAspect > containerAspect) {
-    drawW = photoContainerHeight * imgAspect;
-    drawX = photoX - (drawW - photoContainerWidth) / 2;
-  } else {
-    drawH = photoContainerWidth / imgAspect;
-    drawY = photoY - (drawH - photoContainerHeight) / 2;
-  }
-
-  ctx.drawImage(img, drawX, drawY, drawW, drawH);
-  ctx.restore();
-
-  // C. Draw Perforated Dotted Tear Line between notches
-  ctx.save();
-  ctx.beginPath();
-  ctx.setLineDash([Math.round(4 * baseScale), Math.round(6 * baseScale)]);
-  ctx.strokeStyle = isColorLight(options.themeColor) ? 'rgba(38,32,26,0.25)' : 'rgba(255,255,255,0.35)';
-  ctx.lineWidth = Math.round(2 * baseScale);
-  ctx.moveTo(notchRadius + Math.round(4 * baseScale), tearLineY);
-  ctx.lineTo(cardWidth - notchRadius - Math.round(4 * baseScale), tearLineY);
-  ctx.stroke();
-  ctx.restore();
-
-  // D. Draw Lower Ticket Stub Information
   const isLight = isColorLight(options.themeColor);
-  const primaryTextColor = isLight ? '#26201A' : '#FFFFFF';
-  const secondaryTextColor = isLight ? 'rgba(38,32,26,0.65)' : 'rgba(255,255,255,0.7)';
+  const primaryTextColor = isLight ? '#2B2520' : '#FFFFFF';
+  const secondaryTextColor = isLight ? 'rgba(43,37,32,0.72)' : 'rgba(255,255,255,0.78)';
+  const photoRadius = Math.round((options.photoRadius || 18) * baseScale);
 
-  const stubY = tearLineY + Math.round(32 * baseScale);
+  if (isHorizontal) {
+    /* ================= HORIZONTAL / LANDSCAPE TICKET ================= */
+    const photoContainerWidth = Math.round(cardWidth * 0.55);
+    const photoContainerHeight = cardHeight - cardPadding * 2;
+    const tearLineX = cardPadding + photoContainerWidth + Math.round(18 * baseScale);
 
-  // Left Info Column
-  const barcodeWidth = Math.round(110 * baseScale);
-  const barcodeHeight = Math.round(180 * baseScale);
-  const barcodeX = cardWidth - cardPadding - barcodeWidth;
-  const barcodeY = stubY;
+    // A. Draw Card Body with Outer Notches and Middle Tear Notches
+    ctx.save();
+    drawHorizontalTicketCardPath(
+      ctx,
+      0,
+      0,
+      cardWidth,
+      cardHeight,
+      cornerRadius,
+      tearLineX,
+      notchRadius
+    );
+    ctx.fillStyle = options.themeColor;
+    ctx.fill();
 
-  ctx.save();
-  // 1. Subtitle / Label: "NEXT STATION"
-  ctx.fillStyle = secondaryTextColor;
-  ctx.font = `700 ${Math.round(14 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-  ctx.letterSpacing = `${Math.round(2 * baseScale)}px`;
-  ctx.fillText((options.subTitle || 'NEXT STATION').toUpperCase(), cardPadding, stubY + Math.round(14 * baseScale));
+    // B. Draw Left Photo
+    ctx.save();
+    const photoX = cardPadding;
+    const photoY = cardPadding;
 
-  // 2. Main Station Title
-  ctx.fillStyle = primaryTextColor;
-  ctx.letterSpacing = '0px';
-  ctx.font = `900 ${Math.round(28 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.beginPath();
+    drawRoundedRect(
+      ctx,
+      photoX,
+      photoY,
+      photoContainerWidth,
+      photoContainerHeight,
+      photoRadius
+    );
+    ctx.clip();
 
-  const mainTitle = (options.stationTitle || 'GREAT WALL OF CHINA').toUpperCase();
-  const words = mainTitle.split(' ');
-  let line1 = '';
-  let line2 = '';
+    const imgAspect = originalPhotoWidth / originalPhotoHeight;
+    const containerAspect = photoContainerWidth / photoContainerHeight;
+    let drawW = photoContainerWidth;
+    let drawH = photoContainerHeight;
+    let drawX = photoX;
+    let drawY = photoY;
 
-  for (const word of words) {
-    if ((line1 + word).length < 14 && !line2) {
-      line1 += (line1 ? ' ' : '') + word;
+    if (imgAspect > containerAspect) {
+      drawW = photoContainerHeight * imgAspect;
+      drawX = photoX - (drawW - photoContainerWidth) / 2;
     } else {
-      line2 += (line2 ? ' ' : '') + word;
+      drawH = photoContainerWidth / imgAspect;
+      drawY = photoY - (drawH - photoContainerHeight) / 2;
     }
-  }
 
-  const titleY = stubY + Math.round(48 * baseScale);
-  ctx.fillText(line1, cardPadding, titleY);
-  if (line2) {
-    ctx.fillText(line2, cardPadding, titleY + Math.round(32 * baseScale));
-  }
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
 
-  // Optional Chinese Subtitle
-  if (options.stationSubtitle) {
+    // C. Draw Subtle Vertical Dotted Tear Crease Line
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([Math.round(3 * baseScale), Math.round(5 * baseScale)]);
+    ctx.strokeStyle = isLight ? 'rgba(43,37,32,0.22)' : 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = Math.round(1.5 * baseScale);
+    ctx.moveTo(tearLineX, notchRadius + Math.round(3 * baseScale));
+    ctx.lineTo(tearLineX, cardHeight - notchRadius - Math.round(3 * baseScale));
+    ctx.stroke();
+    ctx.restore();
+
+    // D. Draw Right Ticket Stub Info (Centered Aesthetic from Reference Image)
+    const stubCenterX = tearLineX + (cardWidth - tearLineX) / 2;
+
+    ctx.save();
+    ctx.textAlign = 'center';
+
+    // 1. Top Activity / Station Title (Bold Vintage Display / Serif)
+    ctx.fillStyle = primaryTextColor;
+    ctx.font = `900 ${Math.round(25 * baseScale)}px "Georgia", "Times New Roman", -apple-system, serif`;
+    ctx.letterSpacing = `${Math.round(2 * baseScale)}px`;
+    const mainTitle = (options.stationTitle || 'EXPLORE').toUpperCase();
+    ctx.fillText(mainTitle, stubCenterX, cardPadding + Math.round(48 * baseScale));
+
+    // Optional Chinese subtitle right below
+    if (options.stationSubtitle) {
+      ctx.fillStyle = secondaryTextColor;
+      ctx.font = `700 ${Math.round(14 * baseScale)}px -apple-system, sans-serif`;
+      ctx.letterSpacing = '1px';
+      ctx.fillText(options.stationSubtitle, stubCenterX, cardPadding + Math.round(76 * baseScale));
+    }
+
+    // 2. Middle Metadata Stack (e.g. 2026-7 / NO.2026 / XIAOHONGSHU)
+    const midY = cardPadding + Math.round(150 * baseScale);
+
+    // Date / Year
+    ctx.font = `800 ${Math.round(17 * baseScale)}px -apple-system, BlinkMacSystemFont, sans-serif`;
+    ctx.fillStyle = primaryTextColor;
+    ctx.letterSpacing = '0.5px';
+    const dateStr = options.date ? `${options.year || '2026'}-${options.date}` : options.year || '2026';
+    ctx.fillText(dateStr, stubCenterX, midY);
+
+    // Serial No.
+    ctx.font = `700 ${Math.round(11 * baseScale)}px monospace`;
     ctx.fillStyle = secondaryTextColor;
-    ctx.font = `700 ${Math.round(20 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-    const subChineseY = line2 ? titleY + Math.round(62 * baseScale) : titleY + Math.round(30 * baseScale);
-    ctx.fillText(options.stationSubtitle, cardPadding, subChineseY);
+    ctx.letterSpacing = '1px';
+    const serialNo = options.ticketNo ? `NO.${options.ticketNo.slice(-6)}` : 'NO.2026';
+    ctx.fillText(serialNo, stubCenterX, midY + Math.round(20 * baseScale));
+
+    // Sub-label (e.g. XIAOHONGSHU / STAMP MAKER)
+    ctx.font = `800 ${Math.round(10.5 * baseScale)}px monospace`;
+    ctx.fillStyle = secondaryTextColor;
+    ctx.letterSpacing = '1.5px';
+    ctx.fillText((options.subTitle || 'XIAOHONGSHU').toUpperCase(), stubCenterX, midY + Math.round(38 * baseScale));
+
+    // 3. Bottom Direct-Ink Barcode
+    const barcodeWidth = Math.round(140 * baseScale);
+    const barcodeHeight = Math.round(38 * baseScale);
+    const barcodeBottomY = cardHeight - cardPadding - Math.round(14 * baseScale);
+
+    drawDirectInkBarcode(
+      ctx,
+      stubCenterX,
+      barcodeBottomY,
+      barcodeWidth,
+      barcodeHeight,
+      primaryTextColor
+    );
+
+    ctx.restore();
+  } else {
+    /* ================= VERTICAL TICKET ================= */
+    const photoContainerWidth = cardWidth - cardPadding * 2;
+    const photoContainerHeight = Math.round(photoContainerWidth * 0.96);
+    const tearLineY = cardPadding + photoContainerHeight + Math.round(28 * baseScale);
+
+    // A. Draw Card Body with Left and Right Notches
+    ctx.save();
+    drawVerticalTicketCardPath(
+      ctx,
+      0,
+      0,
+      cardWidth,
+      cardHeight,
+      cornerRadius,
+      tearLineY,
+      notchRadius
+    );
+    ctx.fillStyle = options.themeColor;
+    ctx.fill();
+
+    // B. Draw Top Photo
+    ctx.save();
+    const photoX = cardPadding;
+    const photoY = cardPadding;
+
+    ctx.beginPath();
+    drawRoundedRect(
+      ctx,
+      photoX,
+      photoY,
+      photoContainerWidth,
+      photoContainerHeight,
+      photoRadius
+    );
+    ctx.clip();
+
+    const imgAspect = originalPhotoWidth / originalPhotoHeight;
+    const containerAspect = photoContainerWidth / photoContainerHeight;
+    let drawW = photoContainerWidth;
+    let drawH = photoContainerHeight;
+    let drawX = photoX;
+    let drawY = photoY;
+
+    if (imgAspect > containerAspect) {
+      drawW = photoContainerHeight * imgAspect;
+      drawX = photoX - (drawW - photoContainerWidth) / 2;
+    } else {
+      drawH = photoContainerWidth / imgAspect;
+      drawY = photoY - (drawH - photoContainerHeight) / 2;
+    }
+
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+    ctx.restore();
+
+    // C. Draw Horizontal Dotted Tear Line
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([Math.round(4 * baseScale), Math.round(6 * baseScale)]);
+    ctx.strokeStyle = isLight ? 'rgba(38,32,26,0.25)' : 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = Math.round(2 * baseScale);
+    ctx.moveTo(notchRadius + Math.round(4 * baseScale), tearLineY);
+    ctx.lineTo(cardWidth - notchRadius - Math.round(4 * baseScale), tearLineY);
+    ctx.stroke();
+    ctx.restore();
+
+    // D. Draw Lower Ticket Stub Info
+    const stubY = tearLineY + Math.round(32 * baseScale);
+    const barcodeWidth = Math.round(110 * baseScale);
+    const barcodeHeight = Math.round(180 * baseScale);
+    const barcodeX = cardWidth - cardPadding - barcodeWidth;
+    const barcodeY = stubY;
+
+    ctx.save();
+    // 1. Subtitle: NEXT STATION
+    ctx.fillStyle = secondaryTextColor;
+    ctx.font = `700 ${Math.round(14 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.letterSpacing = `${Math.round(2 * baseScale)}px`;
+    ctx.fillText((options.subTitle || 'NEXT STATION').toUpperCase(), cardPadding, stubY + Math.round(14 * baseScale));
+
+    // 2. Station Title
+    ctx.fillStyle = primaryTextColor;
+    ctx.letterSpacing = '0px';
+    ctx.font = `900 ${Math.round(28 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+
+    const mainTitle = (options.stationTitle || 'GREAT WALL OF CHINA').toUpperCase();
+    const words = mainTitle.split(' ');
+    let line1 = '';
+    let line2 = '';
+
+    for (const word of words) {
+      if ((line1 + word).length < 14 && !line2) {
+        line1 += (line1 ? ' ' : '') + word;
+      } else {
+        line2 += (line2 ? ' ' : '') + word;
+      }
+    }
+
+    const titleY = stubY + Math.round(48 * baseScale);
+    ctx.fillText(line1, cardPadding, titleY);
+    if (line2) {
+      ctx.fillText(line2, cardPadding, titleY + Math.round(32 * baseScale));
+    }
+
+    if (options.stationSubtitle) {
+      ctx.fillStyle = secondaryTextColor;
+      ctx.font = `700 ${Math.round(20 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      const subChineseY = line2 ? titleY + Math.round(62 * baseScale) : titleY + Math.round(30 * baseScale);
+      ctx.fillText(options.stationSubtitle, cardPadding, subChineseY);
+    }
+
+    // 3. Metadata Row
+    const metaY = cardHeight - cardPadding - Math.round(8 * baseScale);
+    ctx.font = `600 ${Math.round(11 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.fillStyle = secondaryTextColor;
+    ctx.fillText('YEAR', cardPadding, metaY - Math.round(18 * baseScale));
+    ctx.fillText('DATE', cardPadding + Math.round(90 * baseScale), metaY - Math.round(18 * baseScale));
+
+    ctx.font = `800 ${Math.round(18 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+    ctx.fillStyle = primaryTextColor;
+    ctx.fillText(options.year || '2026', cardPadding, metaY);
+    ctx.fillText(options.date || '08.20', cardPadding + Math.round(90 * baseScale), metaY);
+
+    ctx.restore();
+
+    // Right Info Column: Vertical Barcode
+    drawVerticalBarcode(
+      ctx,
+      barcodeX,
+      barcodeY,
+      barcodeWidth,
+      barcodeHeight,
+      options.ticketNo || '120458464677987155'
+    );
   }
-
-  // 3. Metadata Row (YEAR / DATE)
-  const metaY = cardHeight - cardPadding - Math.round(8 * baseScale);
-
-  ctx.font = `600 ${Math.round(11 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-  ctx.fillStyle = secondaryTextColor;
-  ctx.fillText('YEAR', cardPadding, metaY - Math.round(18 * baseScale));
-  ctx.fillText('DATE', cardPadding + Math.round(90 * baseScale), metaY - Math.round(18 * baseScale));
-
-  ctx.font = `800 ${Math.round(18 * baseScale)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
-  ctx.fillStyle = primaryTextColor;
-  ctx.fillText(options.year || '2026', cardPadding, metaY);
-  ctx.fillText(options.date || '08.20', cardPadding + Math.round(90 * baseScale), metaY);
-
-  ctx.restore();
-
-  // Right Info Column: Vertical Barcode
-  drawBarcode(
-    ctx,
-    barcodeX,
-    barcodeY,
-    barcodeWidth,
-    barcodeHeight,
-    options.ticketNo || '120458464677987155'
-  );
-
-  ctx.restore();
 
   // Return transparent or paper background
   if (transparentBackground) {

@@ -5,7 +5,8 @@ import { StampPreview } from './StampPreview';
 import {
   COLOR_PRESETS,
   TICKET_COLOR_PRESETS,
-  TICKET_STATION_PRESETS,
+  VERTICAL_TICKET_PRESETS,
+  HORIZONTAL_TICKET_PRESETS,
   DEFAULT_EXPORT_SETTINGS,
   DEFAULT_TICKET_OPTIONS,
   STAMP_STYLES,
@@ -51,6 +52,11 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const currentImage = images[activeIndex] || images[0];
   const activeImageUrl = currentImage?.croppedUrl || currentImage?.rawUrl || '';
 
+  const activePresets =
+    ticketOptions.orientation === 'horizontal'
+      ? HORIZONTAL_TICKET_PRESETS
+      : VERTICAL_TICKET_PRESETS;
+
   const handleSelectStyle = (styleId: StampStyleId) => {
     const preset = STAMP_STYLES.find((s) => s.id === styleId);
     if (preset) {
@@ -77,7 +83,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
     });
   };
 
-  const handleSelectTicketPreset = (preset: (typeof TICKET_STATION_PRESETS)[0]) => {
+  const handleSelectTicketPreset = (preset: { title: string; subtitle: string; themeColor: string }) => {
     setTicketOptions((prev) => ({
       ...prev,
       stationTitle: preset.title,
@@ -375,42 +381,71 @@ export const EditorView: React.FC<EditorViewProps> = ({
         ) : (
           /* ================= TICKET STUB CONTROLS ================= */
           <>
-            {/* Quick Destination Presets */}
+            {/* Ticket Orientation & Destination Presets */}
             <div>
               <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
-                <span>目的地与站点</span>
+                <span>票根版式与主题词</span>
                 <span className="text-[9.5px] font-mono text-ink-2">点击快捷填词</span>
               </div>
-              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-                {TICKET_STATION_PRESETS.map((preset, idx) => (
+              <div className="flex items-center justify-between gap-2">
+                {/* Orientation Switcher */}
+                <div className="flex items-center p-0.5 rounded-xl bg-paper border-2 border-ink shadow-neo-sm shrink-0">
                   <button
-                    key={idx}
                     type="button"
-                    onClick={() => handleSelectTicketPreset(preset)}
-                    className="h-6 rounded-lg bg-paper border border-ink shadow-neo-sm btn-neo px-2 text-[10px] font-bold text-ink whitespace-nowrap hover:bg-sun transition-colors"
+                    onClick={() => setTicketOptions((prev) => ({ ...prev, orientation: 'horizontal' }))}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all whitespace-nowrap ${
+                      ticketOptions.orientation === 'horizontal'
+                        ? 'bg-sun text-ink border border-ink shadow-neo-sm'
+                        : 'text-ink-2 hover:text-ink'
+                    }`}
                   >
-                    {preset.subtitle}
+                    💻 横版
                   </button>
-                ))}
+                  <button
+                    type="button"
+                    onClick={() => setTicketOptions((prev) => ({ ...prev, orientation: 'vertical' }))}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-extrabold transition-all whitespace-nowrap ${
+                      ticketOptions.orientation === 'vertical'
+                        ? 'bg-sun text-ink border border-ink shadow-neo-sm'
+                        : 'text-ink-2 hover:text-ink'
+                    }`}
+                  >
+                    📱 竖版
+                  </button>
+                </div>
+
+                {/* Quick Destination Chips */}
+                <div className="flex-1 min-w-0 flex items-center gap-1 overflow-x-auto no-scrollbar">
+                  {activePresets.map((preset, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handleSelectTicketPreset(preset)}
+                      className="h-6 rounded-lg bg-paper border border-ink shadow-neo-sm btn-neo px-1.5 text-[9.5px] font-bold text-ink whitespace-nowrap hover:bg-sun transition-colors shrink-0"
+                    >
+                      {preset.subtitle}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
             {/* Station Title & Subtitle Inputs */}
             <div className="grid grid-cols-2 gap-1.5">
               <div>
-                <label className="text-[10px] font-bold text-ink-2 px-0.5 block mb-0.5">英文站名</label>
+                <label className="text-[10px] font-bold text-ink-2 px-0.5 block mb-0.5">英文主题/站名</label>
                 <input
                   type="text"
                   value={ticketOptions.stationTitle}
                   onChange={(e) =>
                     setTicketOptions((prev) => ({ ...prev, stationTitle: e.target.value.toUpperCase() }))
                   }
-                  placeholder="GREAT WALL OF CHINA"
+                  placeholder={ticketOptions.orientation === 'horizontal' ? 'EXPLORE / SURFING' : 'GREAT WALL OF CHINA'}
                   className="w-full px-2 py-1 rounded-lg border-2 border-ink bg-paper text-[11px] font-extrabold uppercase text-ink focus:outline-none focus:bg-sun-tint"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-bold text-ink-2 px-0.5 block mb-0.5">中文站名 / 年月日</label>
+                <label className="text-[10px] font-bold text-ink-2 px-0.5 block mb-0.5">中文副标 / 月日</label>
                 <div className="flex items-center gap-1">
                   <input
                     type="text"
@@ -418,7 +453,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                     onChange={(e) =>
                       setTicketOptions((prev) => ({ ...prev, stationSubtitle: e.target.value }))
                     }
-                    placeholder="万里长城"
+                    placeholder="探索发现"
                     className="w-1/2 px-2 py-1 rounded-lg border-2 border-ink bg-paper text-[11px] font-bold text-ink focus:outline-none focus:bg-sun-tint"
                   />
                   <input
@@ -427,7 +462,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                     onChange={(e) =>
                       setTicketOptions((prev) => ({ ...prev, date: e.target.value }))
                     }
-                    placeholder="08.20"
+                    placeholder="08"
                     className="w-1/2 px-2 py-1 rounded-lg border-2 border-ink bg-paper text-[11px] font-mono font-bold text-ink focus:outline-none focus:bg-sun-tint"
                   />
                 </div>
@@ -437,7 +472,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
             {/* Ticket Card Theme Color Palettes */}
             <div>
               <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
-                <span>票面主题色</span>
+                <span>票面复古色</span>
                 <span className="font-mono text-[9.5px] text-ink-2 bg-sand px-1 rounded border border-ink/30">
                   {TICKET_COLOR_PRESETS.find((c) => c.hex.toLowerCase() === ticketOptions.themeColor.toLowerCase())?.name || '自定义'}
                 </span>
