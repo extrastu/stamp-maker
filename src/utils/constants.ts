@@ -52,7 +52,7 @@ export const COLOR_PRESETS = [
 
 export const DEFAULT_STAMP_OPTIONS: StampOptions = {
   style: 'classic',
-  margin: 18, // default margin
+  margin: 0, // Default to Full-Bleed 0 margin (perforations punched directly into photo)
   holeRadius: 18,
   holeGap: 46,
   backgroundColor: '#FFFFFF',
@@ -64,13 +64,13 @@ export const DEFAULT_EXPORT_SETTINGS: ExportSettings = {
   format: 'png',
   resolution: 2160,
   transparent: true,
-  paperColor: '#FAF8F5',
+  paperColor: '#FFF4DD',
 };
 
 export const DEFAULT_PREFERENCES: UserPreferences = {
   ratioId: '3:4',
   styleId: 'classic',
-  margin: 18,
+  margin: 0,
   backgroundColor: '#FFFFFF',
   photoRadius: 0,
   exportResolution: 2160,

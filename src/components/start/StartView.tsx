@@ -229,7 +229,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected }) => {
             </div>
 
             <div className='text-[10px] text-ink-3 pt-1 border-t-2 border-dashed border-ink/30 font-mono font-bold'>
-              v1.0.2 · Built for Xiaohongshu
+              v1.0.3 · Built for Xiaohongshu
             </div>
 
             <button

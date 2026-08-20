@@ -45,7 +45,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
   const handleMarginChange = (val: number) => {
     onOptionsChange({
       ...options,
-      margin: val,
+      margin: Math.max(0, val),
     });
   };
 
@@ -91,54 +91,54 @@ export const EditorView: React.FC<EditorViewProps> = ({
     }
   };
 
-  // Slider progress percentage
-  const minMargin = 4;
-  const maxMargin = 40;
+  // Slider progress percentage (0px to 36px)
+  const minMargin = 0;
+  const maxMargin = 36;
   const sliderPercentage = Math.max(0, Math.min(100, ((options.margin - minMargin) / (maxMargin - minMargin)) * 100));
 
   return (
     <div className="h-[100dvh] max-h-[100dvh] overflow-hidden bg-paper text-ink flex flex-col justify-between max-w-md mx-auto relative select-none">
-      {/* 1. Top Navigation Row (Neo-Brutalist Pills) */}
-      <div className="shrink-0 px-4 pt-2 pb-1 flex items-center justify-between z-10 safe-top">
+      {/* 1. Top Navigation Row */}
+      <div className="shrink-0 px-4 pt-1 pb-1 flex items-center justify-between z-10 safe-top">
         <button
           type="button"
           onClick={onBackToCrop}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-3 text-xs font-extrabold text-ink transition-all"
+          className="inline-flex h-7 items-center gap-1 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
         >
-          <ArrowLeft className="size-3.5 stroke-[2.5]" />
+          <ArrowLeft className="size-3 stroke-[2.5]" />
           <span>重新构图</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsExportModalOpen(true)}
-          className="inline-flex h-8 items-center gap-1.5 rounded-xl bg-sun border-2 border-ink shadow-neo-sm btn-neo px-3 text-xs font-extrabold text-ink transition-all"
+          className="inline-flex h-7 items-center gap-1 rounded-xl bg-sun border-2 border-ink shadow-neo-sm btn-neo px-2.5 text-[11px] font-extrabold text-ink transition-all"
           title="导出参数"
         >
-          <SlidersHorizontal className="size-3.5 stroke-[2.5]" />
+          <SlidersHorizontal className="size-3 stroke-[2.5]" />
           <span>导出参数</span>
         </button>
       </div>
 
       {/* 2. Main Stamp Live Preview Stage */}
-      <div className="flex-1 min-h-0 flex items-center justify-center px-4 py-2 overflow-hidden">
+      <div className="flex-1 min-h-0 flex items-center justify-center px-3 py-1 overflow-hidden">
         <StampPreview
           croppedImageUrl={croppedImageUrl}
           options={options}
         />
       </div>
 
-      {/* 3. Customization Control Panel (Neo-Brutalist Sticker Card) */}
-      <div className="shrink-0 p-4 bg-card rounded-t-3xl border-t-2 border-ink shadow-neo-xl space-y-3.5 safe-bottom">
-        {/* Style Selector */}
+      {/* 3. Customization Control Panel */}
+      <div className="shrink-0 p-3.5 bg-card rounded-t-3xl border-t-2 border-ink shadow-neo-xl space-y-2.5 safe-bottom">
+        {/* Perforation Style Selector */}
         <div>
-          <div className="flex items-center justify-between text-xs font-extrabold text-ink mb-1.5 px-0.5">
+          <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
             <span>齿孔样式</span>
-            <span className="font-mono text-[11px] font-bold text-ink-2 bg-sand px-2 py-0.5 rounded-md border border-ink/30">
+            <span className="font-mono text-[10px] font-bold text-ink-2 bg-sand px-1.5 py-0.2 rounded border border-ink/30">
               {options.style === 'classic' ? '标准齿' : options.style === 'fine' ? '密齿' : '大齿'}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-1.5">
             {[
               { id: 'classic' as const, name: '标准齿' },
               { id: 'fine' as const, name: '复古密齿' },
@@ -150,9 +150,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
                   key={style.id}
                   type="button"
                   onClick={() => handleSelectStyle(style.id)}
-                  className={`h-9 rounded-xl text-xs font-extrabold transition-all text-center select-none flex items-center justify-center border-2 border-ink btn-neo ${
+                  className={`h-7.5 rounded-xl text-[11.5px] font-extrabold transition-all text-center select-none flex items-center justify-center border-2 border-ink btn-neo ${
                     isSelected
-                      ? 'bg-sun text-ink shadow-neo'
+                      ? 'bg-sun text-ink shadow-neo-sm'
                       : 'bg-paper text-ink shadow-none hover:bg-sand opacity-90'
                   }`}
                 >
@@ -163,14 +163,52 @@ export const EditorView: React.FC<EditorViewProps> = ({
           </div>
         </div>
 
-        {/* Margin Slider */}
+        {/* Margin Slider & Quick Mode Pills */}
         <div>
-          <div className="flex items-center justify-between text-xs font-extrabold text-ink mb-1 px-0.5">
+          <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
             <span>留白边距</span>
-            <span className="font-mono text-[11px] font-bold text-ink bg-sun px-2 py-0.5 rounded-md border-2 border-ink shadow-neo-sm">
-              {options.margin}px
+            <span className="font-mono text-[10px] font-bold text-ink bg-sun px-2 py-0.2 rounded-md border-2 border-ink shadow-neo-sm">
+              {options.margin === 0 ? '满幅打孔 (0px)' : `${options.margin}px`}
             </span>
           </div>
+
+          {/* Quick Margin Pills */}
+          <div className="grid grid-cols-3 gap-1.5 mb-1.5">
+            <button
+              type="button"
+              onClick={() => handleMarginChange(0)}
+              className={`h-6 rounded-lg text-[10.5px] font-extrabold border-2 border-ink btn-neo transition-all ${
+                options.margin === 0
+                  ? 'bg-accent text-white shadow-neo-sm'
+                  : 'bg-paper text-ink hover:bg-sand'
+              }`}
+            >
+              满幅打孔
+            </button>
+            <button
+              type="button"
+              onClick={() => handleMarginChange(14)}
+              className={`h-6 rounded-lg text-[10.5px] font-extrabold border-2 border-ink btn-neo transition-all ${
+                options.margin === 14
+                  ? 'bg-accent text-white shadow-neo-sm'
+                  : 'bg-paper text-ink hover:bg-sand'
+              }`}
+            >
+              经典留白
+            </button>
+            <button
+              type="button"
+              onClick={() => handleMarginChange(26)}
+              className={`h-6 rounded-lg text-[10.5px] font-extrabold border-2 border-ink btn-neo transition-all ${
+                options.margin === 26
+                  ? 'bg-accent text-white shadow-neo-sm'
+                  : 'bg-paper text-ink hover:bg-sand'
+              }`}
+            >
+              宽幅相框
+            </button>
+          </div>
+
           <input
             type="range"
             min={minMargin}
@@ -186,8 +224,13 @@ export const EditorView: React.FC<EditorViewProps> = ({
 
         {/* Background Color Selector */}
         <div>
-          <div className="text-xs font-extrabold text-ink mb-1.5 px-0.5">衬纸底色</div>
-          <div className="flex items-center justify-between gap-2 px-1">
+          <div className="flex items-center justify-between text-[11px] font-extrabold text-ink mb-1 px-0.5">
+            <span>衬纸底色</span>
+            {options.margin === 0 && (
+              <span className="text-[10px] text-ink-3 font-normal">满幅打孔无需底色</span>
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-1.5 px-0.5">
             {COLOR_PRESETS.map((color) => {
               const isSelected = options.backgroundColor.toLowerCase() === color.hex.toLowerCase();
               return (
@@ -196,7 +239,7 @@ export const EditorView: React.FC<EditorViewProps> = ({
                   type="button"
                   onClick={() => handleSelectColor(color.hex)}
                   style={{ backgroundColor: color.hex }}
-                  className={`size-7 rounded-full border-2 border-ink transition-all relative ${
+                  className={`size-6 rounded-full border-2 border-ink transition-all relative ${
                     isSelected
                       ? 'ring-2 ring-ink ring-offset-2 scale-110 shadow-neo-sm'
                       : 'hover:scale-105 opacity-90'
@@ -209,24 +252,24 @@ export const EditorView: React.FC<EditorViewProps> = ({
         </div>
 
         {/* Action Buttons Toolbar */}
-        <div className="pt-1 space-y-2">
-          {/* Main Primary CTA Button (Tangerine Accent #FF5C2B) */}
+        <div className="pt-0.5 space-y-1.5">
+          {/* Main Primary CTA Button */}
           <button
             type="button"
             onClick={handleSaveDirectly}
             disabled={isSaving}
-            className="w-full h-11 rounded-2xl bg-accent hover:bg-accent-hover text-white font-extrabold text-sm flex items-center justify-center gap-2 border-2 border-ink shadow-neo-lg btn-neo transition-all disabled:opacity-50"
+            className="w-full h-10 rounded-xl bg-accent hover:bg-accent-hover text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 border-2 border-ink shadow-neo btn-neo transition-all disabled:opacity-50"
           >
-            <Download className="size-4 stroke-[2.5]" />
+            <Download className="size-3.5 stroke-[2.5]" />
             <span>{isSaving ? '生成中...' : isXhs ? '保存邮票到手机相册 📬' : '保存高清邮票图片 📬'}</span>
           </button>
 
           {/* Secondary Action Row */}
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-1.5">
             <button
               type="button"
               onClick={() => setIsPostNoteModalOpen(true)}
-              className="h-9 rounded-xl bg-rose border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-xs flex items-center justify-center gap-1 transition-all"
+              className="h-8 rounded-xl bg-rose border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all"
             >
               <span>📕</span>
               <span>发布小红书图文</span>
@@ -236,9 +279,9 @@ export const EditorView: React.FC<EditorViewProps> = ({
               type="button"
               onClick={handleCopyClipboard}
               disabled={isQuickCopying}
-              className="h-9 rounded-xl bg-sky border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-xs flex items-center justify-center gap-1 transition-all disabled:opacity-50"
+              className="h-8 rounded-xl bg-sky border-2 border-ink shadow-neo-sm btn-neo text-ink font-extrabold text-[11px] flex items-center justify-center gap-1 transition-all disabled:opacity-50"
             >
-              <Copy className="size-3.5 stroke-[2.5] text-ink" />
+              <Copy className="size-3 stroke-[2.5] text-ink" />
               <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
             </button>
           </div>
