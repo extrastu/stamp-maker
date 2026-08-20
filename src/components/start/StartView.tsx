@@ -232,7 +232,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
         >
           <span>📜</span>
           <span>更新日志</span>
-          <span className='font-mono text-[9px] bg-accent text-white px-1.5 py-0.2 rounded-full font-black'>v1.0.3</span>
+          <span className='font-mono text-[9px] bg-accent text-white px-1.5 py-0.2 rounded-full font-black'>v1.0.4</span>
         </button>
 
         <button
@@ -428,7 +428,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImagesSelected, onToast 
               >
                 <span>📜 查看版本更新日志</span>
               </button>
-              <span className='text-[10px] text-ink-3 font-mono font-bold'>v1.0.3</span>
+              <span className='text-[10px] text-ink-3 font-mono font-bold'>v1.0.4</span>
             </div>
 
             <button
