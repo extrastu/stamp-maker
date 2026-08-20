@@ -7,7 +7,10 @@ import { renderStamp } from './renderStamp';
  * Check if running inside XHS MiniTool Container
  */
 export function isXhsMiniTool(): boolean {
-  return typeof window !== 'undefined' && Boolean(window.xhs?.miniTool);
+  if (typeof window === 'undefined') return false;
+  if (Boolean(window.xhs?.miniTool)) return true;
+  const ua = (navigator.userAgent || '').toLowerCase();
+  return ua.includes('xhs') || ua.includes('xiaohongshu');
 }
 
 /**

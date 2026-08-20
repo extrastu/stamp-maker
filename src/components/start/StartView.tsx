@@ -1,7 +1,8 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Image as ImageIcon, Camera, X, ArrowRight, Copy, Check } from "lucide-react";
+import { Image as ImageIcon, Camera, X, ArrowRight, Copy, Check, ExternalLink } from "lucide-react";
 import { SampleStamp } from "./SampleStamp";
 import { OFFLINE_SAMPLES } from "../../utils/sampleImages";
+import { isXhsMiniTool } from "../../utils/exportStamp";
 import logoImg from "../../assets/logo.png";
 
 interface StartViewProps {
@@ -15,6 +16,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
   const [isProcessing, setIsProcessing] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const isXhs = isXhsMiniTool();
 
   // Global Paste Listener (Ctrl/Cmd + V)
   useEffect(() => {
@@ -220,7 +222,7 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
         </button>
       </footer>
 
-      {/* About Modal (Neo-Brutalism Sticker Dialog with Click-to-Copy Links) */}
+      {/* About Modal (Adaptive: Copy in XHS, Direct Link in Web) */}
       {showAbout && (
         <div
           onClick={() => setShowAbout(false)}
@@ -252,63 +254,116 @@ export const StartView: React.FC<StartViewProps> = ({ onImageSelected, onToast }
               </p>
             </div>
 
-            {/* Links Section in About Modal (Click to Copy Link) */}
+            {/* Links Section in About Modal */}
             <div className='space-y-1.5 text-left pt-1 border-t-2 border-dashed border-ink/20'>
-              <div className='text-[10px] font-bold text-ink-3 px-0.5'>点击复制链接：</div>
+              <div className='text-[10px] font-bold text-ink-3 px-0.5'>
+                {isXhs ? '点击复制链接：' : '相关链接：'}
+              </div>
 
               {/* 1. Web Version */}
-              <button
-                type='button'
-                onClick={() => handleCopyLink('web', 'https://stampmakers.pages.dev/', '网页版')}
-                className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sun transition-all text-left'
-              >
-                <div className='flex items-center gap-1.5'>
-                  <span>🌐</span>
-                  <span>在线网页版</span>
-                </div>
-                <div className='flex items-center gap-1'>
-                  <span className='font-mono text-[9.5px] text-ink-2'>stampmakers.pages.dev</span>
-                  <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'web' ? 'bg-mint text-ink font-bold' : 'bg-sand text-ink-2'}`}>
-                    {copiedKey === 'web' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+              {isXhs ? (
+                <button
+                  type='button'
+                  onClick={() => handleCopyLink('web', 'https://stampmakers.pages.dev/', '网页版')}
+                  className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sun transition-all text-left'
+                >
+                  <div className='flex items-center gap-1.5'>
+                    <span>🌐</span>
+                    <span>在线网页版</span>
+                  </div>
+                  <div className='flex items-center gap-1'>
+                    <span className='font-mono text-[9.5px] text-ink-2'>stampmakers.pages.dev</span>
+                    <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'web' ? 'bg-mint text-ink font-bold' : 'bg-sand text-ink-2'}`}>
+                      {copiedKey === 'web' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <a
+                  href='https://stampmakers.pages.dev/'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sun transition-all no-underline'
+                >
+                  <div className='flex items-center gap-1.5'>
+                    <span>🌐</span>
+                    <span>在线网页版</span>
+                  </div>
+                  <span className='font-mono text-[10px] text-ink-2 font-semibold flex items-center gap-0.5'>
+                    stampmakers.pages.dev <ExternalLink className='size-2.5' />
                   </span>
-                </div>
-              </button>
+                </a>
+              )}
 
               {/* 2. GitHub Repo */}
-              <button
-                type='button'
-                onClick={() => handleCopyLink('github', 'https://github.com/extrastu/stamp-maker', 'GitHub 源码')}
-                className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sky transition-all text-left'
-              >
-                <div className='flex items-center gap-1.5'>
-                  <span>🐙</span>
-                  <span>开源 GitHub</span>
-                </div>
-                <div className='flex items-center gap-1'>
-                  <span className='font-mono text-[9.5px] text-ink-2'>extrastu/stamp-maker</span>
-                  <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'github' ? 'bg-mint text-ink font-bold' : 'bg-sand text-ink-2'}`}>
-                    {copiedKey === 'github' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+              {isXhs ? (
+                <button
+                  type='button'
+                  onClick={() => handleCopyLink('github', 'https://github.com/extrastu/stamp-maker', 'GitHub 源码')}
+                  className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sky transition-all text-left'
+                >
+                  <div className='flex items-center gap-1.5'>
+                    <span>🐙</span>
+                    <span>开源 GitHub</span>
+                  </div>
+                  <div className='flex items-center gap-1'>
+                    <span className='font-mono text-[9.5px] text-ink-2'>extrastu/stamp-maker</span>
+                    <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'github' ? 'bg-mint text-ink font-bold' : 'bg-sand text-ink-2'}`}>
+                      {copiedKey === 'github' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <a
+                  href='https://github.com/extrastu/stamp-maker'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-sky transition-all no-underline'
+                >
+                  <div className='flex items-center gap-1.5'>
+                    <span>🐙</span>
+                    <span>开源 GitHub</span>
+                  </div>
+                  <span className='font-mono text-[10px] text-ink-2 font-semibold flex items-center gap-0.5'>
+                    extrastu/stamp-maker <ExternalLink className='size-2.5' />
                   </span>
-                </div>
-              </button>
+                </a>
+              )}
 
               {/* 3. Redbook Profile */}
-              <button
-                type='button'
-                onClick={() => handleCopyLink('xhs', 'https://xhslink.cn/m/lTR6WMDnhB', '作者小红书')}
-                className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-rose transition-all text-left'
-              >
-                <div className='flex items-center gap-1.5'>
-                  <span>📕</span>
-                  <span>关注作者小红书</span>
-                </div>
-                <div className='flex items-center gap-1'>
-                  <span className='font-mono text-[9.5px] text-accent font-bold'>@extrastu</span>
-                  <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'xhs' ? 'bg-mint text-ink font-bold' : 'bg-rose text-ink font-bold'}`}>
-                    {copiedKey === 'xhs' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+              {isXhs ? (
+                <button
+                  type='button'
+                  onClick={() => handleCopyLink('xhs', 'https://xhslink.cn/m/lTR6WMDnhB', '作者小红书')}
+                  className='w-full flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-rose transition-all text-left'
+                >
+                  <div className='flex items-center gap-1.5'>
+                    <span>📕</span>
+                    <span>关注作者小红书</span>
+                  </div>
+                  <div className='flex items-center gap-1'>
+                    <span className='font-mono text-[9.5px] text-accent font-bold'>@extrastu</span>
+                    <span className={`px-1.5 py-0.2 rounded text-[9.5px] font-mono flex items-center gap-0.5 border border-ink/40 ${copiedKey === 'xhs' ? 'bg-mint text-ink font-bold' : 'bg-rose text-ink font-bold'}`}>
+                      {copiedKey === 'xhs' ? <><Check className='size-2.5' /> 已复制</> : <><Copy className='size-2.5' /> 复制</>}
+                    </span>
+                  </div>
+                </button>
+              ) : (
+                <a
+                  href='https://xhslink.cn/m/lTR6WMDnhB'
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='flex items-center justify-between p-2 rounded-xl bg-card border-2 border-ink shadow-neo-sm btn-neo text-xs font-bold text-ink hover:bg-rose transition-all no-underline'
+                >
+                  <div className='flex items-center gap-1.5'>
+                    <span>📕</span>
+                    <span>关注作者小红书</span>
+                  </div>
+                  <span className='font-mono text-[10px] text-accent font-bold flex items-center gap-0.5'>
+                    关注 <ExternalLink className='size-2.5' />
                   </span>
-                </div>
-              </button>
+                </a>
+              )}
             </div>
 
             <div className='text-[10px] text-ink-3 pt-0.5 font-mono font-bold'>
