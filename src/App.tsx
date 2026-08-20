@@ -3,7 +3,6 @@ import { Area } from 'react-easy-crop';
 import { AppStep, AspectRatioId, StampOptions, ImageState } from './types';
 import { DEFAULT_STAMP_OPTIONS } from './utils/constants';
 import { loadPreferences, savePreferences } from './utils/storage';
-import { Header } from './components/common/Header';
 import { Toast, ToastMessage } from './components/common/Toast';
 import { StartView } from './components/start/StartView';
 import { CropView } from './components/crop/CropView';
@@ -104,15 +103,9 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-paper-100 flex flex-col selection:bg-paper-300">
-      {/* Global Header */}
-      <Header
-        currentStep={currentStep}
-        onReset={handleReset}
-      />
-
+    <div className={`min-h-screen transition-colors ${currentStep === 'crop' ? 'bg-[#141418]' : 'bg-[#FAF8F5]'}`}>
       {/* Main View Transition */}
-      <main className="flex-1">
+      <main className="w-full">
         {currentStep === 'start' && (
           <StartView onImageSelected={handleImageSelected} />
         )}

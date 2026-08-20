@@ -1,13 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Download, Copy } from 'lucide-react';
-import { StampOptions } from '../../types';
+import { ArrowLeft, Download, Copy, Share2 } from 'lucide-react';
+import { StampOptions, StampStyleId } from '../../types';
 import { StampPreview } from './StampPreview';
-import { StampStylePicker } from './StampStylePicker';
-import { BackgroundPicker } from './BackgroundPicker';
-import { MarginSlider } from './MarginSlider';
+import { COLOR_PRESETS, DEFAULT_EXPORT_SETTINGS, STAMP_STYLES } from '../../utils/constants';
 import { ExportModal } from '../export/ExportModal';
-import { copyStampToClipboard } from '../../utils/exportStamp';
-import { DEFAULT_EXPORT_SETTINGS } from '../../utils/constants';
+import { copyStampToClipboard, downloadStamp, isXhsMiniTool } from '../../utils/exportStamp';
 
 interface EditorViewProps {
   croppedImageUrl: string;
@@ -28,15 +25,54 @@ export const EditorView: React.FC<EditorViewProps> = ({
 }) => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isQuickCopying, setIsQuickCopying] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const isXhs = isXhsMiniTool();
 
-  const handleUpdateOptions = (partial: Partial<StampOptions>) => {
+  const handleSelectStyle = (styleId: StampStyleId) => {
+    const preset = STAMP_STYLES.find((s) => s.id === styleId);
+    if (preset) {
+      onOptionsChange({
+        ...options,
+        style: styleId,
+        holeRadius: preset.baseRadius,
+        holeGap: preset.baseGap,
+      });
+    }
+  };
+
+  const handleMarginChange = (val: number) => {
     onOptionsChange({
       ...options,
-      ...partial,
+      margin: val,
     });
   };
 
-  const handleQuickCopy = async () => {
+  const handleSelectColor = (hex: string) => {
+    onOptionsChange({
+      ...options,
+      backgroundColor: hex,
+    });
+  };
+
+  const handleSaveDirectly = async () => {
+    try {
+      setIsSaving(true);
+      const res = await downloadStamp(
+        croppedImageUrl,
+        options,
+        DEFAULT_EXPORT_SETTINGS,
+        originalFileName
+      );
+      onToast(res.success ? 'success' : 'error', res.message);
+    } catch (err) {
+      console.error('Save error', err);
+      onToast('error', '保存失败');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCopyClipboard = async () => {
     try {
       setIsQuickCopying(true);
       const res = await copyStampToClipboard(
@@ -46,117 +82,162 @@ export const EditorView: React.FC<EditorViewProps> = ({
       );
       onToast(res.success ? 'success' : 'error', res.message);
     } catch (err) {
-      console.error('Quick copy error', err);
-      onToast('error', '复制失败，请尝试保存导出');
+      console.error('Copy error', err);
+      onToast('error', '复制失败');
     } finally {
       setIsQuickCopying(false);
     }
   };
 
+  // Slider progress percentage for purple track fill
+  const minMargin = 4;
+  const maxMargin = 40;
+  const sliderPercentage = Math.max(0, Math.min(100, ((options.margin - minMargin) / (maxMargin - minMargin)) * 100));
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col h-[calc(100vh-4.5rem)]">
-      {/* Top Action Bar */}
-      <div className="flex items-center justify-between pb-4 mb-3 border-b border-paper-200">
+    <div className="min-h-screen bg-[#FAF8F5] text-neutral-900 flex flex-col justify-between max-w-md mx-auto relative select-none">
+      {/* 1. Top Navigation Row (Separated from stamp stage) */}
+      <div className="px-4 pt-3.5 pb-1 flex items-center justify-between z-10 safe-top">
         <button
+          type="button"
           onClick={onBackToCrop}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-ink-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-paper-200 transition-colors"
+          className="flex items-center gap-1.5 text-xs text-neutral-600 hover:text-neutral-900 bg-white/90 hover:bg-white px-3.5 py-1.5 rounded-full shadow-xs border border-neutral-200/80 backdrop-blur-xs transition-all active:scale-[0.97]"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-3.5 h-3.5" />
           <span>重新构图</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          <span className="font-serif font-bold text-sm sm:text-base text-ink">邮票定制</span>
-        </div>
-
-        {/* Top Export Actions */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleQuickCopy}
-            disabled={isQuickCopying}
-            className="hidden sm:flex items-center gap-1.5 text-xs font-medium bg-paper-200 text-ink hover:bg-paper-300 px-3.5 py-2 rounded-xl transition-all border border-paper-300/60"
-            title="一键复制透明 PNG 邮票到剪贴板"
-          >
-            <Copy className="w-3.5 h-3.5" />
-            <span>{isQuickCopying ? '复制中...' : '复制'}</span>
-          </button>
-
-          <button
-            onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-1.5 text-xs sm:text-sm font-medium bg-ink text-paper-50 px-4 py-2 rounded-xl hover:bg-ink-dark transition-all shadow-sm hover:shadow active:scale-[0.98]"
-          >
-            <Download className="w-4 h-4" />
-            <span>保存 / 导出</span>
-          </button>
-        </div>
+        <span className="text-[11px] text-neutral-400 font-medium tracking-wide">
+          邮票预览
+        </span>
       </div>
 
-      {/* Main Split Layout: Desktop Left-Right, Mobile Top-Bottom */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 overflow-hidden">
-        {/* Left / Bottom Controls Sidebar (Desktop: 5 cols, Mobile: scrollable bottom) */}
-        <div className="lg:col-span-5 order-2 lg:order-1 overflow-y-auto pr-0 lg:pr-2 space-y-6 pb-20 lg:pb-6">
-          <div className="bg-white/70 backdrop-blur-sm p-4 sm:p-5 rounded-2xl border border-paper-200 shadow-paper space-y-6">
-            {/* 1. Stamp Perforation Style Preset & Sliders */}
-            <StampStylePicker
-              options={options}
-              onChange={handleUpdateOptions}
-            />
+      {/* 2. Main Stamp Live Preview Stage */}
+      <div className="flex-1 flex items-center justify-center px-4 py-2 min-h-[260px] overflow-hidden">
+        <StampPreview
+          croppedImageUrl={croppedImageUrl}
+          options={options}
+        />
+      </div>
 
-            <hr className="border-paper-200/80" />
-
-            {/* 2. Margin & Corner Radius */}
-            <MarginSlider
-              margin={options.margin}
-              photoRadius={options.photoRadius}
-              onMarginChange={(margin) => handleUpdateOptions({ margin })}
-              onPhotoRadiusChange={(photoRadius) => handleUpdateOptions({ photoRadius })}
-            />
-
-            <hr className="border-paper-200/80" />
-
-            {/* 3. Paper Background Color */}
-            <BackgroundPicker
-              selectedColor={options.backgroundColor}
-              onChange={(backgroundColor) => handleUpdateOptions({ backgroundColor })}
-            />
-          </div>
-
-          {/* Quick tips */}
-          <div className="p-3.5 bg-paper-200/50 rounded-xl border border-paper-300/40 text-[11px] text-ink-muted leading-relaxed">
-            💡 <strong>小贴士：</strong> 导出透明 PNG 后，可无缝拖拽至 Photoshop、Canva 或小红书图片编辑中作为手账贴纸使用。
+      {/* 2. Customization Control Panel (Card Style) */}
+      <div className="p-4 sm:p-5 bg-white rounded-t-3xl shadow-[0_-8px_24px_rgba(0,0,0,0.04)] border-t border-neutral-100 space-y-4 safe-bottom">
+        {/* Border Styles (边框样式) */}
+        <div>
+          <div className="text-xs text-neutral-500 mb-2 font-medium">边框样式</div>
+          <div className="grid grid-cols-3 gap-2.5">
+            {[
+              { id: 'classic' as const, name: '标准', desc: '经典齿孔' },
+              { id: 'fine' as const, name: '密齿', desc: '高密复古' },
+              { id: 'wide' as const, name: '大齿', desc: '现代艺术' },
+            ].map((style) => {
+              const isSelected = options.style === style.id;
+              return (
+                <button
+                  key={style.id}
+                  onClick={() => handleSelectStyle(style.id)}
+                  className={`py-2.5 px-2 rounded-2xl flex flex-col items-center justify-center gap-1 transition-all relative ${
+                    isSelected
+                      ? 'bg-[#F4F1FD] border-2 border-[#7059E8] shadow-xs'
+                      : 'bg-[#F8F7F4] border border-neutral-200/70 hover:bg-[#F0EEEA]'
+                  }`}
+                >
+                  <div className="w-6 h-6 rounded-[2px] border border-dashed border-neutral-400 flex items-center justify-center">
+                    <div className="w-3.5 h-3.5 bg-neutral-300 rounded-[1px]" />
+                  </div>
+                  <span className={`text-xs font-semibold ${isSelected ? 'text-[#7059E8]' : 'text-neutral-700'}`}>
+                    {style.name}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
-        {/* Right Preview Viewport (Desktop: 7 cols, Mobile: Sticky top preview) */}
-        <div className="lg:col-span-7 order-1 lg:order-2 flex flex-col h-full bg-white/40 rounded-2xl p-2 sm:p-4 border border-paper-200/70 shadow-paper overflow-hidden">
-          <StampPreview
-            croppedImageUrl={croppedImageUrl}
-            options={options}
+        {/* Margin Slider (边距) */}
+        <div>
+          <div className="flex items-center justify-between text-xs text-neutral-500 mb-1.5 font-medium">
+            <span>留白边距</span>
+            <span className="text-[#7059E8] font-mono font-bold bg-[#F4F1FD] px-2 py-0.5 rounded-md text-[11px]">
+              {options.margin}px
+            </span>
+          </div>
+          <input
+            type="range"
+            min={minMargin}
+            max={maxMargin}
+            value={options.margin}
+            onChange={(e) => handleMarginChange(Number(e.target.value))}
+            style={{
+              background: `linear-gradient(to right, #7059E8 ${sliderPercentage}%, #E8E6E0 ${sliderPercentage}%)`,
+            }}
+            aria-label="调整留白边距"
           />
         </div>
+
+        {/* Background Color Selector (背景颜色) */}
+        <div>
+          <div className="text-xs text-neutral-500 mb-2 font-medium">背景颜色</div>
+          <div className="flex items-center justify-between gap-2 px-1">
+            {COLOR_PRESETS.map((color) => {
+              const isSelected = options.backgroundColor.toLowerCase() === color.hex.toLowerCase();
+              return (
+                <button
+                  key={color.id}
+                  onClick={() => handleSelectColor(color.hex)}
+                  style={{ backgroundColor: color.hex }}
+                  className={`w-8 h-8 rounded-full border transition-all relative ${
+                    isSelected
+                      ? 'ring-2 ring-[#7059E8] ring-offset-2 scale-110 border-neutral-300 shadow-sm'
+                      : 'border-neutral-300/80 hover:scale-105 shadow-xs'
+                  }`}
+                  aria-label={color.name}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Action Buttons Section */}
+        <div className="pt-2 space-y-2.5">
+          {/* Main Primary CTA Button */}
+          <button
+            onClick={handleSaveDirectly}
+            disabled={isSaving}
+            className="w-full h-12 rounded-2xl bg-[#7059E8] hover:bg-[#5E47E0] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-purple-300/50 active:scale-[0.98] disabled:opacity-50"
+          >
+            <Download className="w-4 h-4 stroke-[2.2]" />
+            <span>{isSaving ? '正在生成高清图片...' : isXhs ? '保存邮票到手机相册' : '保存高清邮票图片'}</span>
+          </button>
+
+          {/* Secondary Action Buttons Grid */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <button
+              onClick={handleCopyClipboard}
+              disabled={isQuickCopying}
+              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-medium text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
+            </button>
+
+            <button
+              onClick={() => setIsExportModalOpen(true)}
+              className="h-11 rounded-xl bg-white border border-[#D8CFFB] hover:bg-[#F4F1FD] text-[#7059E8] font-medium text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98]"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>{isXhs ? '发布小红书' : '分享 / 更多'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Quality Tip */}
+        <div className="text-center text-[11px] text-neutral-400 font-normal pt-1">
+          建议保存为 PNG 以获得真实透明齿孔效果
+        </div>
       </div>
 
-      {/* Mobile Sticky Bottom Action Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 p-3 bg-paper-100/95 backdrop-blur-md border-t border-paper-200 flex items-center gap-2.5 z-20 safe-bottom">
-        <button
-          onClick={handleQuickCopy}
-          disabled={isQuickCopying}
-          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-paper-200 text-ink text-xs font-medium border border-paper-300"
-        >
-          <Copy className="w-3.5 h-3.5" />
-          <span>{isQuickCopying ? '复制中...' : '复制透明图'}</span>
-        </button>
-
-        <button
-          onClick={() => setIsExportModalOpen(true)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl bg-ink text-paper-50 text-xs font-medium shadow-sm active:scale-[0.98]"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span>保存图片</span>
-        </button>
-      </div>
-
-      {/* Export Modal Dialog */}
+      {/* Export & Share Modal */}
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}

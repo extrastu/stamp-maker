@@ -12,30 +12,21 @@ export const RatioSelector: React.FC<RatioSelectorProps> = ({
   onSelectRatio,
 }) => {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto py-1 px-1 no-scrollbar">
+    <div className="grid grid-cols-5 gap-2 w-full">
       {RATIOS.map((ratio) => {
         const isSelected = selectedRatio === ratio.id;
         return (
           <button
             key={ratio.id}
+            type="button"
             onClick={() => onSelectRatio(ratio.id)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+            className={`py-2.5 px-1 rounded-xl text-xs font-semibold transition-all text-center select-none ${
               isSelected
-                ? 'bg-ink text-paper-50 shadow-sm'
-                : 'bg-paper-200/80 text-ink-muted hover:text-ink hover:bg-paper-300/80'
+                ? 'bg-[#7059E8] text-white shadow-md shadow-purple-900/40 ring-1 ring-white/30 scale-[1.02]'
+                : 'bg-[#24242C] text-neutral-400 hover:text-white hover:bg-[#30303A]'
             }`}
           >
-            {/* Visual ratio miniature box */}
-            <span
-              className={`inline-block border ${
-                isSelected ? 'border-paper-50 bg-paper-50/20' : 'border-ink-muted/60'
-              } rounded-[1px]`}
-              style={{
-                width: ratio.width > ratio.height ? '14px' : `${Math.round(14 * (ratio.width / ratio.height))}px`,
-                height: ratio.height > ratio.width ? '14px' : `${Math.round(14 * (ratio.height / ratio.width))}px`,
-              }}
-            />
-            <span>{ratio.id}</span>
+            {ratio.id}
           </button>
         );
       })}

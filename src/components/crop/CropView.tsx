@@ -1,8 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import Cropper, { Area } from 'react-easy-crop';
-import { ArrowLeft, ArrowRight, Crop } from 'lucide-react';
+import { ArrowLeft, ArrowRight, RotateCw } from 'lucide-react';
 import { RatioSelector } from './RatioSelector';
-import { ZoomSlider } from './ZoomSlider';
 import { AspectRatioId } from '../../types';
 import { RATIOS } from '../../utils/constants';
 import { getCroppedImg } from '../../utils/cropImage';
@@ -27,7 +26,7 @@ export const CropView: React.FC<CropViewProps> = ({
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const activeRatioObj = RATIOS.find((r) => r.id === selectedRatio) || RATIOS[0];
+  const activeRatioObj = RATIOS.find((r) => r.id === selectedRatio) || RATIOS[1];
 
   const handleCropCompleteInternal = useCallback(
     (_croppedArea: Area, croppedAreaPixels: Area) => {
@@ -54,37 +53,34 @@ export const CropView: React.FC<CropViewProps> = ({
     }
   };
 
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
+  };
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6 flex flex-col h-[calc(100vh-4.5rem)]">
-      {/* Top Header Navigation */}
-      <div className="flex items-center justify-between pb-4 mb-2 border-b border-paper-200">
+    <div className="min-h-screen bg-[#141418] text-white flex flex-col justify-between max-w-md mx-auto relative select-none">
+      {/* Top Floating Controls */}
+      <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-none safe-top">
         <button
           onClick={onBack}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-ink-muted hover:text-ink px-3 py-1.5 rounded-lg hover:bg-paper-200 transition-colors"
+          className="pointer-events-auto flex items-center gap-1.5 text-xs text-white/90 bg-black/50 hover:bg-black/70 px-3.5 py-2 rounded-full backdrop-blur-md border border-white/15 transition-all active:scale-[0.97] shadow-md"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>返回</span>
+          <span>重选图片</span>
         </button>
 
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded bg-paper-200 text-ink flex items-center justify-center">
-            <Crop className="w-3.5 h-3.5" />
-          </div>
-          <span className="font-serif font-bold text-sm sm:text-base text-ink">裁切构图</span>
-        </div>
-
         <button
-          onClick={handleNext}
-          disabled={isProcessing}
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-medium bg-ink text-paper-50 px-4 py-2 rounded-xl hover:bg-ink-dark transition-all shadow-sm hover:shadow disabled:opacity-50"
+          onClick={handleRotate}
+          className="pointer-events-auto flex items-center gap-1 text-xs text-white/90 bg-black/50 hover:bg-black/70 px-3 py-2 rounded-full backdrop-blur-md border border-white/15 transition-all active:scale-[0.97] shadow-md"
+          title="旋转图片"
         >
-          <span>{isProcessing ? '处理中...' : '下一步'}</span>
-          <ArrowRight className="w-4 h-4" />
+          <RotateCw className="w-3.5 h-3.5" />
+          <span className="font-mono text-[11px]">{rotation}°</span>
         </button>
       </div>
 
-      {/* Cropper Container */}
-      <div className="relative flex-1 min-h-[300px] w-full bg-[#1A1918] rounded-2xl overflow-hidden shadow-stamp border border-paper-300/30">
+      {/* Main Cropper Stage */}
+      <div className="relative flex-1 min-h-[460px] w-full bg-[#0A0A0D] overflow-hidden flex items-center justify-center">
         <Cropper
           image={imageUrl}
           crop={crop}
@@ -102,19 +98,18 @@ export const CropView: React.FC<CropViewProps> = ({
           }}
         />
 
-        {/* Floating guidance overlay */}
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-[11px] text-white/90 font-medium">
-          拖拽调整构图 · 双指缩放
+        {/* Center Tip */}
+        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 pointer-events-none bg-black/60 backdrop-blur-md px-3.5 py-1 rounded-full text-[11px] text-white/75 font-medium tracking-wide">
+          拖动调整画面 · 双指缩放
         </div>
       </div>
 
-      {/* Bottom Controls Panel */}
-      <div className="mt-4 space-y-3 bg-white/60 backdrop-blur-sm p-3.5 sm:p-4 rounded-2xl border border-paper-200 shadow-paper">
+      {/* Bottom Control Sheet */}
+      <div className="bg-[#1A1A22] border-t border-[#2A2A35] p-4 sm:p-5 space-y-4 safe-bottom">
         {/* Ratio Selector */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="text-xs font-serif font-semibold text-ink flex items-center gap-1.5">
-            <span>邮票画幅比例</span>
-            <span className="text-[10px] font-sans text-ink-muted font-normal">(推荐 3:4)</span>
+        <div className="space-y-2">
+          <div className="text-xs text-neutral-400 font-medium tracking-wide">
+            选择画幅比例
           </div>
           <RatioSelector
             selectedRatio={selectedRatio}
@@ -122,14 +117,16 @@ export const CropView: React.FC<CropViewProps> = ({
           />
         </div>
 
-        {/* Zoom & Rotation */}
-        <div className="pt-2 border-t border-paper-200/60">
-          <ZoomSlider
-            zoom={zoom}
-            rotation={rotation}
-            onZoomChange={setZoom}
-            onRotateChange={setRotation}
-          />
+        {/* Primary Action Button */}
+        <div className="pt-1">
+          <button
+            onClick={handleNext}
+            disabled={isProcessing}
+            className="w-full h-12 rounded-2xl bg-[#7059E8] hover:bg-[#5E47E0] text-white font-semibold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-purple-950/50 active:scale-[0.98] disabled:opacity-50"
+          >
+            <span>{isProcessing ? '正在处理裁切...' : '下一步：定制邮票'}</span>
+            <ArrowRight className="w-4 h-4 stroke-[2.2]" />
+          </button>
         </div>
       </div>
     </div>
